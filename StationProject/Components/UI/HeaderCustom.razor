@@ -1,0 +1,26 @@
+@namespace StationProject.Components.UI
+
+<div style="padding: 30px 60px; background: #E8ECF2; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; flex-direction: row; vertical-align: bottom">
+        <span style="font-size: 40px; letter-spacing: 2px; color: #052C3D; line-height: 0.80em;">HeaderCustom</span>
+        <AuthorizeView Roles="Admin">
+            <span style="padding-left: 4px; font-size: 20px; letter-spacing: -1px; color: #052C3D; line-height: 0.95em; margin-top: auto">Admin</span>
+        </AuthorizeView>
+    </div>
+
+    <div style="display: flex; flex-direction: row; align-items: center; gap: 20px">
+        <NavLink class="nav-tab" href="cart">
+            <div class="nav-item" style="display: flex; align-items: center; color: #052C3D;">
+                <img src="images/shopping_bag_24dp.svg" alt="cart" style="width: 36px;"/>
+                <span style="font-size: 20px">Cart</span>
+            </div>
+        </NavLink>
+        
+        <NavLink class="nav-item nav-tab" href="profile">
+            <div class="nav-item" style="display: flex; align-items: center; color: #052C3D;">
+                <img src="images/person_24dp.svg" alt="profile" style="width: 36px;"/>
+                <span style="font-size: 20px">Profile</span>
+            </div>
+        </NavLink>
+    </div>
+</div>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using StationProject.Data;
+using StationProject.Data.Models;
 
 namespace StationProject.Components.Account;
 

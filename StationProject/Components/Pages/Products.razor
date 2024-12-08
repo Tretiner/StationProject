@@ -1,0 +1,43 @@
+@page "/cart"
+@using StationProject.Data.Models
+
+@if (ProductList.Count != 0)
+{
+    <div class="row gap-20" style="flex-wrap: wrap; justify-content: flex-start; padding: 20px 60px">
+        <h2>Products</h2>
+        
+        @foreach (var product in ProductList)
+        {
+            <div class="column" style="flex: 1 1 300px; min-width: 230px; width: 290px;">
+                <img src="@GetFirstImageOrPlaceHolderUrl(product.ImageUrls)" style="width: 100%; height: auto;">
+
+                <div class="column gap-10">
+                    <div class="column">
+                        <span style="font-size: 24px; height: 50px;">@product.Name</span>
+                        <span style="flex: 1; font-size: 28px; font-weight: bold; align-self: flex-end;">@(string.Format(product.PriceTemplate, product.Price))</span>
+                    </div>
+
+                    <div class="row gap-10">
+                        <button style="flex: 1;" class="outlined" @onclick="@(() => ToCart(product))">В корзину</button>
+                        <button style="flex: 1;" class="primary" @onclick="@(() => BuyNow(product))">Купить</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <span>Ничего не выставлено на продажу!</span>
+}
+
+@code {
+
+    public static string GetFirstImageOrPlaceHolderUrl(IEnumerable<string> imageUrls) =>
+        imageUrls.FirstOrDefault() ?? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK-Vg_IFRtnL2WQsSiJFML7R22xC8i0FL11w&s";
+
+    public void ToCart(Product productId) { }
+
+    public void BuyNow(Product productId) { }
+
+}

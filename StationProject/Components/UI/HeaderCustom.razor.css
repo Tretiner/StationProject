@@ -1,0 +1,31 @@
+.nav-tab {
+    position: relative; /* Needed for positioning the underline */
+    text-decoration: none; /* Remove default underline */
+    color: #052C3D; /* Text color */
+}
+
+.nav-item {
+	display: flex;
+	align-items: center;
+}
+
+.nav-item span {
+	font-size: 20px;
+	position: relative; /* Needed for pseudo-element positioning */
+}
+
+.nav-item::after {
+	content: ''; /* Empty content for pseudo-element */
+	position: absolute;
+	left: 0; /* Start from the left */
+	bottom: -5px; /* Position the underline below the text */
+	width: 100%; /* Full width of the text */
+	height: 2px; /* Height of the underline */
+	background-color: #052C3D; /* Color of the underline */
+	transform: scaleX(0); /* Start scaled to 0 (hidden) */
+	transition: transform 0.25s ease-in-out; /* Animation properties */
+}
+
+.nav-tab:hover .nav-item::after {
+	transform: scaleX(1); /* Scale to full width on hover */
+}

@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using StationProject.Components.Account.Pages;
 using StationProject.Components.Account.Pages.Manage;
-using StationProject.Data;
+using StationProject.Data.Models;
 
-namespace Microsoft.AspNetCore.Routing;
+namespace StationProject.Components.Account;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {

@@ -1,18 +1,17 @@
-﻿@inherits LayoutComponentBase
+﻿@using StationProject.Components.UI
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
         <NavMenu/>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <main class="f-column">
+        <HeaderCustom/>
 
-        <article class="content px-4">
-            @Body
-        </article>
+        @Body
+
+        <FooterCustom/>
     </main>
 </div>
 

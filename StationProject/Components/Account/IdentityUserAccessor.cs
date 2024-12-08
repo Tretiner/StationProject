@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using StationProject.Data;
+using StationProject.Data.Models;
 
 namespace StationProject.Components.Account;
 
