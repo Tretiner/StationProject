@@ -1,9 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Nunito", 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    outline: none;
 }
 
 a, .btn-link {
     color: #006bb7;
+}
+
+span {
+    color: #052C3D;
 }
 
 .btn-primary {
@@ -13,7 +23,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -42,10 +52,60 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+.f-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.f-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.fw-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.fw-column {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.space-between {
+    justify-content: space-between;
+}
+
+.gap-40 {
+    gap: 20px;
+}
+
+.gap-20 {
+    gap: 20px;
+}
+
+.gap-10 {
+    gap: 10px;
+}
+
+.gap-6 {
+    gap: 6px;
+}
+
+.gap-4 {
+    gap: 4px;
+}
+
+.m-10 {
+    margin: 10px;
 }

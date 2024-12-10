@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Radzen;
 using StationProject.Components;
 using StationProject.Components.Account;
 using StationProject.Data;
@@ -33,6 +34,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     }
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()

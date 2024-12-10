@@ -1,31 +1,53 @@
+.site-header {
+	font-size: 40px; 
+	letter-spacing: 2px;
+	color: #052C3D; 
+	line-height: 0.80em;
+}
+
+.sub-header {
+	padding-left: 4px; 
+	font-size: 20px; 
+	letter-spacing: -1px; 
+	color: #052C3D; 
+	line-height: 0.95em; 
+	margin-top: auto
+}
+
 .nav-tab {
-    position: relative; /* Needed for positioning the underline */
-    text-decoration: none; /* Remove default underline */
-    color: #052C3D; /* Text color */
+    position: relative;
+    color: #052C3D;
 }
 
-.nav-item {
-	display: flex;
-	align-items: center;
+.f-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.nav-item span {
-	font-size: 20px;
-	position: relative; /* Needed for pseudo-element positioning */
+.f-nav-item img {
+    width: 36px;
 }
 
-.nav-item::after {
-	content: ''; /* Empty content for pseudo-element */
-	position: absolute;
-	left: 0; /* Start from the left */
-	bottom: -5px; /* Position the underline below the text */
-	width: 100%; /* Full width of the text */
-	height: 2px; /* Height of the underline */
-	background-color: #052C3D; /* Color of the underline */
-	transform: scaleX(0); /* Start scaled to 0 (hidden) */
-	transition: transform 0.25s ease-in-out; /* Animation properties */
+.f-nav-item span {
+    position: relative;
+    font-size: 20px;
+    text-decoration: none;
+    color: #052C3D;
 }
 
-.nav-tab:hover .nav-item::after {
-	transform: scaleX(1); /* Scale to full width on hover */
+.f-nav-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px; /* Adjust as needed for spacing */
+    width: 100%;
+    height: 2px;
+    transform: scaleX(0);
+    transition: transform 0.25s ease-in-out, background-color 0.25s ease-in-out;
+}
+
+.nav-tab:hover .f-nav-item::after {
+    transform: scaleX(1);
+    background-color: #052C3D; /* Change to desired color */
 }

@@ -1,0 +1,82 @@
+@page "/Products/{CategoryId?}"
+@rendermode InteractiveServer
+
+@using StationProject.Domain
+
+@inject NavigationManager Navigation
+@inject ILogger<CatalogPage> Logger
+
+<div class="f-column">
+    <div class="fw-row gap-20" style="padding: 20px 60px">
+
+        <div class="f-column gap-1">
+            <span class="name-focusing-outlined">поиск</span>
+            <input class="focusing-outlined" style="max-width: 500px;" type="text" placeholder="Введите текст для поиска..."/>
+        </div>
+
+        <div class="f-column gap-1">
+            <span class="name-focusing-outlined">сортировать</span>
+            <select style="flex: 1; background-color: transparent;" class="focusing-outlined" @bind="@OrderBy" @bind:after="@SetProducts">
+                <option value="@ProductOrder.Default">-</option>
+                <option value="@ProductOrder.Name">По имени</option>
+                <option value="@ProductOrder.Price">По цене</option>
+            </select>
+        </div>
+    </div>
+
+    @if (ProductList.Count != 0)
+    {
+        <div class="fw-row gap-20" style="padding: 20px 60px">
+            @foreach (var product in ProductList)
+            {
+                <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;" @onclick="() => NavToFullInfo(product)">
+                    <img src="@product.FirstImageOrPlaceholderUrl()" style="width: 100%; height: auto;">
+
+                    <div class="f-column">
+                        <div class="f-column" style="padding: 10px">
+                            <span style="font-size: 24px; height: 50px; color: #000000">@product.Name</span>
+                            <div class="f-row" style="align-items: center">
+                                <span style="flex: 1; font-size: 20px; text-align: start; color: #8FA5AE">@product.VendorName</span>
+
+                                <div style="height: 13px; width: 1px; background-color: #8FA5AE;"></div>
+
+                                <span style="flex: 1; font-size: 28px; font-weight: bold; text-align: end;">@product.Price</span>
+                            </div>
+                        </div>
+
+                        <div class="f-row gap-10">
+                            <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)">В корзину</button>
+                            <button class="primary" style="flex: 1;" @onclick="() => NavToOrder(product)">Купить</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <span>Ничего не выставлено на продажу!</span>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string? CategoryId { get; set; }
+
+    public ProductOrder OrderBy = ProductOrder.Default;
+
+    public async Task AddOrIncrementToCart(ProductShortInfo product)
+    {
+        if (!product.IsAddedToCart)
+        {
+            product.IsAddedToCart = true;
+            await AddOrIncrementKorzinaItem(product.Id);
+        }
+    }
+
+    public void NavToOrder(ProductShortInfo product) => Navigation.NavigateTo($"Order?fastitem={product.Id}");
+
+    public void NavToFullInfo(ProductShortInfo product) => Navigation.NavigateTo($"Product/{product.Id}");
+
+}

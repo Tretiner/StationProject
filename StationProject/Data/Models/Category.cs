@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StationProject.Data.Models;
 
@@ -13,4 +14,7 @@ public class Category : BaseEntity
     public string[] ImageUrls { get; set; } = null!;
 
     public ICollection<Product> Products { get; set; } = null!;
+
+    public string FirstImageOrPlaceholderUrl() =>
+        ImageUrls.FirstOrDefault() ?? Consts.PlaceholderUrl;
 }

@@ -1,8 +1,12 @@
+@rendermode InteractiveServer
+
 @namespace StationProject.Components.UI
 
+@inject IJSRuntime JS
+
 <div class="footer f-column gap-20" style="padding: 30px 60px; background: #E8ECF2;">
-    <div class="f-row space-between">
-        <div class="f-row" style="gap: 60px">
+    <div class="fw-row space-between gap-20">
+        <div class="fw-row" style="gap: 60px">
             <div class="f-column">
                 <a href="#" class="footer-link-important">Новости</a>
                 <a href="#" class="footer-link">Контакты</a>
@@ -16,7 +20,14 @@
 
         <div class="f-column">
             <span class="follow-us-text">Следите за нами</span>
-            <div class="f-row gap-10"></div>
+            <div class="f-row gap-10">
+                
+            </div>
+            
+            <span class="follow-us-text">Способы оплаты</span>
+            <div class="f-row gap-10">
+                
+            </div>
         </div>
 
         <div class="f-column">
@@ -29,8 +40,19 @@
 
     <div style="height: 1px; background: #8FA5AE; width: 100%;"></div>
 
-    <div class="f-row space-between">
+    <div class="fw-row space-between">
         <span>ООО StationProject</span>
-        <a class="footer-link" href="#top">Вернуться наверх ^</a>
+        <a class="footer-link" @onclick="@(async () => await ScrollToElementId("#top"))">Вернуться наверх ^</a>
     </div>
 </div>
+
+@code {
+    private async Task ScrollToElementId(string elementId)
+    {
+        await JS.InvokeVoidAsync("scrollToTop");
+    }
+}
+
+<script>
+    window.scrollToTop = function () {window.scrollTo({top: 0, behavior: 'smooth'});};
+</script>

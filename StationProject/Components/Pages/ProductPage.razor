@@ -1,0 +1,83 @@
+@page "/Product/{ProductId?}"
+@rendermode InteractiveServer
+
+@using StationProject.Domain
+
+@if (ProductId is null)
+{
+    <span>Product is loading</span>
+}
+else if (Item is null)
+{
+    <span>Product is not found</span>
+}
+else
+{
+    <div class="f-row" style="padding: 20px 60px; gap: 40px">
+        <div class="f-column gap-20">
+            <img src="@Item.FirstImageOrPlaceholderUrl()" style="width: 500px; height: 500px"/>
+
+            <div style="height: 1px; flex: 1; background-color: #E8ECF2;"></div>
+
+            <div class="fw-row space-between" style="flex: 1;">
+                @foreach (var imgUrl in Item.ImageUrls.Skip(1).Take(4))
+                {
+                    <img src="@imgUrl" style="width: 100px; height: 100px"/>
+                }
+            </div>
+        </div>
+
+        <div class="f-column gap-10" style="padding: 10px 20px">
+            <span style="font-size: 48px;">@Item.Name</span>
+
+            <div class="fw-row space-between">
+                <span style="font-weight: bold; font-size: 40px">@Item.VendorName</span>
+
+                <div class="fw-row gap-20">
+                    <span style="font-weight: bold; font-size: 40px">@Item.Price</span>
+                </div>
+            </div>
+
+            <div class="f-row gap-10" style="padding: 10px 0">
+                <button class="@SelectedTabOrEmpty(0)" style="font-size: 20px; background-color: transparent"
+                        @onclick="@(() => SetSelectedTab(0))">
+                    Описание
+                </button>
+                <button class="@SelectedTabOrEmpty(1)" style="font-size: 20px; background-color: transparent"
+                        @onclick="@(() => SetSelectedTab(1))">
+                    Характеристики
+                </button>
+            </div>
+
+            @if (SelectedTabIndex == 0)
+            {
+                @Item.Description
+            }
+            else
+            {
+                <span>Характеристики</span>
+            }
+
+        </div>
+    </div>
+}
+
+@code {
+    public const string ActiveTabClass = "font-size: bold;";
+
+    [Parameter]
+    public string? ProductId { get; set; }
+
+    public int SelectedTabIndex { get; set; }
+
+    public ProductInfo? Item { get; set; }
+
+    public string SelectedTabOrEmpty(int tabIndex) =>
+        SelectedTabIndex == tabIndex ? ActiveTabClass : string.Empty;
+
+    public void SetSelectedTab(int index)
+    {
+        SelectedTabIndex = index;
+    }
+
+}

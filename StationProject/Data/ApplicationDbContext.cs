@@ -18,6 +18,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<KorzinaItem> KorzinaItems { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<OrderItem> OrderItems { get; set; } = null!;
+    public DbSet<Category> Category { get; set; } = null!;
     public DbSet<UserActivityMonthStat> UserActivityMonthStats { get; set; } = null!;
 
     public override int SaveChanges()
@@ -35,6 +36,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Category>().ToTable("Category");
 
         ConfigureRelations(modelBuilder);
         CreateDummyModels(modelBuilder);

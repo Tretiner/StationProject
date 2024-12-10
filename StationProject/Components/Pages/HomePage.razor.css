@@ -1,86 +1,9 @@
-.f-row {
-	display: flex;
-	flex-direction: row;
-}
-
-.f-column {
-	display: inline-flex;
-	flex-direction: column;
-}
-
-.space-between {
-	justify-content: space-between;
-}
-
-.gap-20 {
-	gap: 20px;
-}
-.gap-10 {
-	gap: 10px;
-}
-.gap-6 {
-	gap: 6px;
-}
-.gap-4 {
-	gap: 4px;
-}
-.m-10 {
-	margin: 10px;
-}
-
-.footer * {
-	color: #052c3d;
-	line-height: 27px;
-}
-
-.follow-us-text {
-	font-size: 24px;
-}
-
-.footer-link-important {
-	font-size: 20px;
-	font-weight: bold;
-	text-decoration: none;
-}
-
-.footer-link {
-	font-size: 16px;
-	color: #052c3d;
-	text-decoration: none;
-}
-
-.underlined {
-	text-decoration: underline;
-}
-
-.outlined {
-	color: #3973e1;
-	border: #3973e1 solid 1px; /* Initial border color */
-	border-radius: 24px;
-	text-align: center;
-	font-size: 20px;
-	padding: 20px 10px;
-	cursor: pointer;
-	text-decoration: none;
-	background-color: transparent;
-	transition: border-color 0.1s ease, background-color 0.1s ease;
-}
-
-.outlined:hover {
-	background-color: #e8ecf2;
-	border-color: #3060bb;
-}
-.outlined:active {
-	background-color: #d8ecf2;
-	border-color: #2b55a6;
-}
-
 .primary {
 	background-color: #3973e1; /* Initial background color */
 	border-radius: 24px;
 	color: #e4e9f1;
 	font-weight: bold;
-	font-size: 20px;
+	font-size: 32px;
 	padding: 20px 20px;
 	cursor: pointer;
 	text-decoration: none;
@@ -200,4 +123,33 @@ body {
 	.carousel-control.right {
 		padding: 5px; /* Smaller control buttons on mobile */
 	}
+}
+
+
+.circle-mask {
+    width: 180px;             /* Set width */
+    height: 180px;            /* Set height */
+    border-radius: 50%;       /* Create a circle */
+    /*border: 4px solid #e8ecf2; !* Border color and thickness *!*/
+    overflow: hidden;         /* Hide overflow */
+    display: flex;            /* Center the image */
+    justify-content: center;  /* Center horizontally */
+    align-items: center;      /* Center vertically */
+}
+
+.circle-mask img {
+    width: 100%;              /* Make image fill the container */
+    height: 100%;             /* Make image fill the container */
+    object-fit: cover;        /* Cover the area without distortion */
+}
+
+.category-item {
+	border-radius: 8px;
+	padding: 10px;
+    transition: box-shadow 0.3s ease; /* Smooth transition for the box shadow */
+}
+
+.category-item:hover {
+    cursor: pointer; /* Change cursor to pointer on hover */
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1); /* Box shadow effect */
 }

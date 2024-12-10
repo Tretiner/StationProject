@@ -1,0 +1,168 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Data
+@using StationProject.Data.Models
+
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext DbContext;
+@inject ILogger<HomePage> Logger;
+
+<PageTitle>Home</PageTitle>
+
+<div class="f-column" style="width: 100%">
+    <div class="secondary-block row space-between">
+        <span style="width: 500px; color: #052c3d; font-size: 32px;">
+            <b>StationProject</b> - Легендарная компания<br/>
+            <br/>
+            Мы работаем 100 лет и поставляем ручки и карандаши в 100000 офисов по всему миру
+        </span>
+
+        <div class="f-column rot-7" style="width: 674px">
+            <span style="font-size: 48px; font-weight: bold; color: #052c3d;">
+                Мы продаем ручки!<br/>
+                Eще мы продаем карандаши<br/>
+                <br/>
+            </span>
+            <button @onclick="() => NavigateToProducts()" class="primary" style="width: 257px; align-self: end;">Хочу ручку</button>
+        </div>
+    </div>
+
+    @* <div class="body f-column"> *@
+    @*     <div class="carousel" id="carousel"> *@
+    @*         <div class="carousel-inner" style="margin-left: 400px; margin-right: 400px"> *@
+    @*             <div class="carousel-item" data-index="0">Item 1</div> *@
+    @*             <div class="carousel-item" data-index="1">Item 2</div> *@
+    @*             <div class="carousel-item" data-index="2">Item 3</div> *@
+    @*         </div> *@
+    @*         <button class="carousel-control left" onclick="moveCarousel(-1)">&#10094;</button> *@
+    @*         <button class="carousel-control right" onclick="moveCarousel(1)">&#10095;</button> *@
+    @*     </div> *@
+    @* *@
+    @*     <div class="indicators" id="indicators"> *@
+    @*         <div class="indicator active" onclick="setActive(0)"></div> *@
+    @*         <div class="indicator" onclick="setActive(1)"></div> *@
+    @*         <div class="indicator" onclick="setActive(2)"></div> *@
+    @*     </div> *@
+    @* </div> *@
+
+    @if (Categories is { Count: > 0 })
+    {
+        <div class="fw-column gap-20" style="padding: 60px 40px;">
+            <span style="font-size: 36px; font-weight: bold">Категории</span>
+
+            <div class="fw-row gap-20 space-between" style="flex: 1">
+                @foreach (var category in Enumerable.Repeat(Categories.First(), 5))
+                {
+                    <div class="f-column gap-10 category-item" style="align-items: center" @onclick="@(() => NavigateToProducts(category.Id))">
+                        <div class="circle-mask">
+                            <img src="@category.FirstImageOrPlaceholderUrl()" alt="catgory"/>
+                        </div>
+                        <span style="align-self: center; font-size: 24px; font-weight: bold;">@category.Name</span>
+                    </div>
+                }
+            </div>
+
+            <span style="font-size: 24px; color: #8FA5AE; align-self: flex-end;" @onclick="@(() => NavigateToProducts())">Посмотреть больше ></span>
+        </div>
+    }
+</div>
+
+@code {
+    public ICollection<Category>? Categories { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await DbContext.Category.Take(5).ToListAsync();
+    }
+
+    private void NavigateToProducts(string? categoryId = null)
+    {
+        Logger.LogInformation("Navigate to: Products");
+        NavigationManager.NavigateTo($"Products/{categoryId}");
+    }
+
+}
+
+@* <script> *@
+@* 	var currentIndex = 1; *@
+@* *@
+@*     function updateCarousel() { *@
+@*         const items = document.querySelectorAll(".carousel-item"); *@
+@*         const indicators = document.querySelectorAll(".indicator"); *@
+@* *@
+@*         items.forEach((item, index) => { *@
+@*             item.classList.remove("active", "fade-out"); *@
+@* *@
+@*             if (index === currentIndex) { *@
+@*                 item.classList.add("active"); *@
+@*                 item.style.opacity = "1"; *@
+@* *@
+@*                 // Center the active item *@
+@*                 const offset = (currentIndex + 1 - (items.length - 1) / 2) * (400 + 20); // Adjust based on item width and margin *@
+@*                 document.querySelector( *@
+@*                     ".carousel-inner" *@
+@*                 ).style.transform = `translateX(-${offset}px)`; *@
+@* *@
+@*                 return; // Skip further processing for the active item *@
+@*             } else if (Math.abs(index - currentIndex) > 2) { *@
+@*                 item.classList.add("fade-out"); // Apply fade-out effect *@
+@*                 item.style.opacity = "0"; // Fully transparent if more than two away *@
+@*                 return; // Skip further processing for faded-out items *@
+@*             } *@
+@* *@
+@*             indicators[index].classList.remove("active"); *@
+@*         }); *@
+@* *@
+@*         indicators[currentIndex].classList.add("active"); *@
+@*     } *@
+@* *@
+@*     function moveCarousel(direction) { *@
+@*         const itemsCount = document.querySelectorAll(".carousel-item").length; *@
+@* *@
+@*         // Update current index with cycling *@
+@*         currentIndex = (currentIndex + direction + itemsCount) % itemsCount; *@
+@* *@
+@*         updateCarousel(); *@
+@*     } *@
+@* *@
+@*     function setActive(index) { *@
+@*         currentIndex = index; *@
+@* *@
+@*         // Adjust to center the selected item *@
+@*         updateCarousel(); *@
+@*     } *@
+@* *@
+@*     // Enable dragging functionality *@
+@*     var startX, endX; *@
+@* *@
+@*     const carousel = document.getElementById("carousel"); *@
+@* *@
+@*     carousel.addEventListener("mousedown", (e) => { *@
+@*         startX = e.pageX - carousel.offsetLeft; *@
+@*         carousel.addEventListener("mousemove", drag); *@
+@*         carousel.addEventListener("mouseup", stopDrag); *@
+@*         carousel.addEventListener("mouseleave", stopDrag); *@
+@*     }); *@
+@* *@
+@*     function drag(e) { *@
+@*         endX = e.pageX - carousel.offsetLeft; *@
+@* *@
+@*         if (startX > endX + 50) { *@
+@*             // Drag left *@
+@*             moveCarousel(1); *@
+@*             startX = endX; // Reset start position *@
+@*         } else if (startX < endX - 50) { *@
+@*             // Drag right *@
+@*             moveCarousel(-1); *@
+@*             startX = endX; // Reset start position *@
+@*         } *@
+@*     } *@
+@* *@
+@*     function stopDrag() { *@
+@*         carousel.removeEventListener("mousemove", drag); *@
+@*         carousel.removeEventListener("mouseup", stopDrag); *@
+@*         carousel.removeEventListener("mouseleave", stopDrag); *@
+@*     } *@
+@* </script> *@
