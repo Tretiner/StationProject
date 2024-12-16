@@ -28,6 +28,14 @@
         Wrap="FlexWrap.Wrap"
         Gap="20px">
 
+        <AuthorizeView Roles="Admin, Vendor">
+            <NavLink class="nav-tab" href="Admin">
+                <div class="f-nav-item">
+                    <span>Control panel</span>
+                </div>
+            </NavLink>
+        </AuthorizeView>
+
         <NavLink class="nav-tab" href="Cart">
             <div class="f-nav-item">
                 <img src="images/shopping_bag_24dp.svg" alt="cart" style="width: 36px;"/>
@@ -37,7 +45,7 @@
 
         <AuthorizeView>
             <Authorized>
-                <NavLink class="nav-tab" href="Profile">
+                <NavLink class="nav-tab" href="Account/Manage">
                     <div class="f-nav-item">
                         <img src="images/person_24dp.svg" alt="profile"/>
                         <span>Profile</span>

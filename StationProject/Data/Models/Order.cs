@@ -9,6 +9,8 @@ public class Order : BaseEntity
     [Key]
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
+    public string OrdererId { get; set; } = null!;
+
     public ICollection<OrderItem> Items { get; set; } = null!;
 
     public OrderStatus Status { get; set; }

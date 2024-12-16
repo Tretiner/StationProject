@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StationProject.Data;
 using StationProject.Data.Models;
@@ -12,6 +13,9 @@ public partial class CatalogPage : ComponentBase
     [Inject]
     private ApplicationDbContext _dbContext { get; set; } = null!;
 
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+
     protected override async Task OnInitializedAsync()
     {
         await SetProducts();
@@ -19,37 +23,36 @@ public partial class CatalogPage : ComponentBase
 
     private async Task SetProducts()
     {
-        List<Product> dbProducts;
+        IQueryable<Product> dbRequest;
+
         if (CategoryId is null)
         {
-            var dbRequest = _dbContext.Products.AsQueryable();
-
-            dbRequest = OrderBy switch
-            {
-                ProductOrder.Name => dbRequest.OrderBy(x => x.Name),
-                ProductOrder.Price => dbRequest.OrderBy(x => x.Price),
-                _ => dbRequest,
-            };
-
-            dbProducts = await dbRequest.Include(x => x.PublishedBy).ToListAsync();
+            dbRequest = _dbContext.Products.Include(x => x.PublishedBy);
         }
         else
         {
-            var category = await _dbContext.Category
+            dbRequest = _dbContext.Category
                 .Include(x => x.Products).ThenInclude(x => x.PublishedBy)
-                .FirstAsync(x => x.Id == CategoryId);
-
-            var sortedProductsQuery = OrderBy switch
-            {
-                ProductOrder.Name => category.Products.OrderBy(x => x.Name),
-                ProductOrder.Price => category.Products.OrderBy(x => x.Price),
-                _ => category.Products.AsEnumerable(),
-            };
-
-            dbProducts = sortedProductsQuery.ToList();
+                .Where(x => x.Id == CategoryId)
+                .SelectMany(x => x.Products);
         }
 
-        ProductList = dbProducts.Select(Map).ToList();
+        dbRequest = OrderBy switch
+        {
+            ProductOrder.Name => dbRequest.OrderBy(x => x.Name),
+            ProductOrder.Price => dbRequest.OrderBy(x => x.Price),
+            _ => dbRequest,
+        };
+
+        IEnumerable<Product> products = await dbRequest.ToListAsync();
+
+        var words = QueryText.Split();
+        if (words.Length > 0)
+        {
+            products = products.Where(x => words.Any(w => x.Name.Contains(w, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        ProductList = products.Select(Map).ToList();
     }
 
     private static ProductShortInfo Map(Product product) => new()
@@ -77,16 +80,25 @@ public partial class CatalogPage : ComponentBase
         }
         else
         {
+
             var newItem = new KorzinaItem
             {
-                Source = await _dbContext.Products.FindAsync(productId),
-                Count = 1
+                Source = await _dbContext.Products.FirstAsync(x => x.Id == productId),
+                Count = 1,
+                OwnerId = await GetUserId()
             };
 
             await _dbContext.KorzinaItems.AddAsync(newItem);
-            Logger.LogInformation($"Added item: {newItem.Source.Name} {existingItem.Id}");
+            Logger.LogInformation($"Added item: {newItem.Source.Name} {newItem.Id}");
         }
 
         await _dbContext.SaveChangesAsync();
+    }
+
+    async Task<string> GetUserId()
+    {
+        var user = (await authenticationStateTask).User;
+        var userid = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return userid;
     }
 }

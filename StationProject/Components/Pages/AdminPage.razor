@@ -1,0 +1,43 @@
+@page "/Admin"
+@rendermode InteractiveServer
+
+@using StationProject.Components.Pages.AdminTabs
+@using StationProject.Data.Models.Enums
+
+<div class="f-column" style="padding: 0 60px">
+    <div class="f-row gap-20" style="padding: 20px 0">
+        <button class="tab-button @GetSelectedButtonStyle(AdminTab.Stats)" @onclick="() => SelectTab(AdminTab.Stats)">Stats</button>
+        <button class="tab-button @GetSelectedButtonStyle(AdminTab.Products)" @onclick="() => SelectTab(AdminTab.Products)">Stats</button>
+        <button class="tab-button @GetSelectedButtonStyle(AdminTab.Users)" @onclick="() => SelectTab(AdminTab.Users)">Stats</button>
+    </div>
+    
+    <div style="height: 1px; background-color: #E8ECF2"></div>
+
+    <div style="padding: 20px 0">
+        @if (SelectedTab == AdminTab.Stats)
+        {
+            <StatsComponent/>
+        }
+        else if (SelectedTab == AdminTab.Products)
+        {
+            <ProductsComponent/>
+        }
+        else
+        {
+            <UsersComponent/>
+        }
+    </div>
+</div>
+
+@code
+{
+    public string GetSelectedButtonStyle(AdminTab tab) =>
+        tab == SelectedTab ? "tab-button-selected" : "";
+
+    public AdminTab SelectedTab { get; set; } = AdminTab.Stats;
+
+    public void SelectTab(AdminTab tab)
+    {
+        SelectedTab = tab;
+    }
+}

@@ -1,0 +1,106 @@
+@page "/Cart"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Data
+@using StationProject.Data.Models
+@using StationProject.Domain
+@using StationProject.Services
+
+@inject AppNavigationManager _navigation
+@inject ApplicationDbContext _db;
+
+@if (CartItems is { Count: > 0 })
+{
+    <div class="fw-row" style="padding: 20px 60px; gap: 60px; flex: 1">
+
+        <div class="f-column gap-20" style="min-width: 560px; flex: 1;">
+            @foreach (var item in CartItems)
+            {
+                <div class="f-row cart-item gap-10" @onclick="@item.ChangeChecked" @onclick:stopPropagation="true" style="flex: 1;">
+                    <img src="@item.Source.FirstImageOrPlaceholderUrl()" style="width: 193px; height: 193px"/>
+
+                    <div class="f-column space-between" style="padding: 20px; flex: 1">
+                        <div class="f-row space-between gap-20" style="align-items: center">
+                            <span style="font-size: 32px;">@item.Source.Name</span>
+                            <input type="checkbox" @bind="@item.IsSelected" style="width: 24px; height: 24px; border-radius: 50%;"/>
+                        </div>
+
+                        <span style="font-size: 32px; font-weight: bold">@item.Source.Price</span>
+
+                        <div class="f-row gap-20" style="align-self: flex-end">
+                            <button class="trash-button" @onclick="() => _navigation.NavigateToFastItemOrder(item.Source.Id)" @onclick:stopPropagation="true">
+                                <img src="images/trash_24dp.svg" alt="cart" style="width: 24px;"/>
+                            </button>
+                            <div class="quantity-control" style="flex: 1" @onclick:stopPropagation="true">
+                                <button @onclick="@(() => item.SelectedCount = Math.Max(1, item.SelectedCount - 1))" @onclick:stopPropagation="true">-</button>
+                                <input type="number" @bind="@item.SelectedCount" min="1" max="@item.Count"/>
+                                <button @onclick="@(() => item.SelectedCount = Math.Min(item.Count, item.SelectedCount + 1))" @onclick:stopPropagation="true">+</button>
+                            </div>
+                            <button class="primary" @onclick="() => _navigation.NavigateToFastItemOrder(item.Source.Id)" @onclick:stopPropagation="true">Купить</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="f-column gap-20 results-column">
+            <div class="f-row space-between">
+                <span style="font-size: 32px">Цена:</span>
+                <span style="font-size: 32px; font-weight: bold">@GetResultPrice()</span>
+            </div>
+
+            <button class="primary" @onclick="MakeOrder">Заказать</button>
+        </div>
+
+    </div>
+}
+else
+{
+    <span>Nothing is here yet!</span>
+}
+
+
+@code {
+    public List<CartItemInfo>? CartItems { get; set; }
+
+    public string GetResultPrice() =>
+        string.Format(
+            CartItems.First().PriceTemplate,
+            CartItems.Where(x => x.IsSelected).Sum(x => x.Price * x.SelectedCount)
+        );
+
+    protected override async Task OnInitializedAsync()
+    {
+        var korzinaItems = await _db.KorzinaItems
+            .Include(x => x.Source).ThenInclude(x => x.PublishedBy)
+            .ToListAsync();
+
+        CartItems = korzinaItems.Select(x =>
+            new CartItemInfo(
+                Id: x.Id,
+                Price: x.Source.Price,
+                PriceTemplate: x.Source.PriceTemplate,
+                Count: x.Count,
+                Source: Map(x.Source)
+            )
+        ).ToList();
+
+    }
+
+    public void MakeOrder()
+    {
+        
+    }
+
+    private static ProductShortInfo Map(Product product) => new()
+    {
+        Id = product.Id,
+        ImageUrls = product.ImageUrls,
+        Name = product.Name,
+        VendorName = product.PublishedBy.UserName,
+        Price = string.Format(product.PriceTemplate, product.Price),
+        IsAddedToCart = false,
+    };
+
+}

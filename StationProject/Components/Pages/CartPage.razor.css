@@ -1,0 +1,54 @@
+.cart-item {
+    min-width: 500px; /* Set minimum width for cart items */
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    border: 1px solid #3973e1;
+    border-radius: 8px;
+    font-size: 20px
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.quantity-control button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    align-self: center;
+    cursor: pointer;
+    vertical-align: middle;
+    background-color: transparent;
+    color: #3973e1;
+}
+
+.quantity-control input {
+    width: 50px;
+    color: #3973e1;
+    text-align: center;
+    border: none;
+}
+
+.trash-button {
+    width: 53px;
+    border: 1px solid #FF5353;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #FF5353;
+    cursor: pointer; /* Pointer cursor */
+}
+
+.trash-button img {
+    filter: hue-rotate(200deg); /* Change icon color if needed */
+}
+
+.results-column {
+    min-width: 500px; /* Set minimum width for results column */
+}

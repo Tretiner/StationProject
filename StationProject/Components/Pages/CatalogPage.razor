@@ -2,8 +2,9 @@
 @rendermode InteractiveServer
 
 @using StationProject.Domain
+@using StationProject.Services
 
-@inject NavigationManager Navigation
+@inject AppNavigationManager _navigation
 @inject ILogger<CatalogPage> Logger
 
 <div class="f-column">
@@ -11,12 +12,13 @@
 
         <div class="f-column gap-1">
             <span class="name-focusing-outlined">поиск</span>
-            <input class="focusing-outlined" style="max-width: 500px;" type="text" placeholder="Введите текст для поиска..."/>
+            <input class="focusing-outlined" style="max-width: 500px;" type="text" placeholder="Введите текст для поиска..."
+                   @bind="QueryText" @bind:after="@SetProducts" @bind:event="oninput"/>
         </div>
 
         <div class="f-column gap-1">
             <span class="name-focusing-outlined">сортировать</span>
-            <select style="flex: 1; background-color: transparent;" class="focusing-outlined" @bind="@OrderBy" @bind:after="@SetProducts">
+            <select style="flex: 1; background-color: transparent;" class="focusing-outlined" @bind="OrderBy" @bind:after="@SetProducts">
                 <option value="@ProductOrder.Default">-</option>
                 <option value="@ProductOrder.Name">По имени</option>
                 <option value="@ProductOrder.Price">По цене</option>
@@ -29,11 +31,11 @@
         <div class="fw-row gap-20" style="padding: 20px 60px">
             @foreach (var product in ProductList)
             {
-                <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;" @onclick="() => NavToFullInfo(product)">
+                <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;">
                     <img src="@product.FirstImageOrPlaceholderUrl()" style="width: 100%; height: auto;">
 
                     <div class="f-column">
-                        <div class="f-column" style="padding: 10px">
+                        <div class="f-column" style="padding: 10px" @onclick="() => _navigation.NavigateToFullInfo(product.Id)">
                             <span style="font-size: 24px; height: 50px; color: #000000">@product.Name</span>
                             <div class="f-row" style="align-items: center">
                                 <span style="flex: 1; font-size: 20px; text-align: start; color: #8FA5AE">@product.VendorName</span>
@@ -45,8 +47,15 @@
                         </div>
 
                         <div class="f-row gap-10">
-                            <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)">В корзину</button>
-                            <button class="primary" style="flex: 1;" @onclick="() => NavToOrder(product)">Купить</button>
+                            @if (product.IsAddedToCart)
+                            {
+                                <button class="outlined" style="flex: 1; background-color: #039855; border-color: #00a85d; color: white" @onclick="() => _navigation.NavigateToCart()">Добавлено!</button>
+                            }
+                            else
+                            {
+                                <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)">В корзину</button>
+                            }
+                            <button class="primary" style="flex: 1;" @onclick="() => _navigation.NavigateToFastItemOrder(product.Id)">Купить</button>
                         </div>
                     </div>
                 </div>
@@ -64,19 +73,19 @@
     [Parameter]
     public string? CategoryId { get; set; }
 
+    public string QueryText = "";
     public ProductOrder OrderBy = ProductOrder.Default;
 
     public async Task AddOrIncrementToCart(ProductShortInfo product)
     {
-        if (!product.IsAddedToCart)
+        await Task.Run(async () =>
         {
-            product.IsAddedToCart = true;
-            await AddOrIncrementKorzinaItem(product.Id);
-        }
+            if (!product.IsAddedToCart)
+            {
+                product.IsAddedToCart = true;
+                await AddOrIncrementKorzinaItem(product.Id);
+            }
+        });
     }
-
-    public void NavToOrder(ProductShortInfo product) => Navigation.NavigateTo($"Order?fastitem={product.Id}");
-
-    public void NavToFullInfo(ProductShortInfo product) => Navigation.NavigateTo($"Product/{product.Id}");
 
 }

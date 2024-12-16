@@ -50,19 +50,19 @@ namespace StationProject.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "727d35a5-fba7-43c2-8fef-f1e79cea5cbb",
+                            Id = "ac8d88c1-fe43-4865-966d-a46bd2a6d593",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "4bb0edc7-a371-4b82-af09-8884ce08b523",
+                            Id = "bdb03559-9cf0-4803-8d01-83f0e69534dd",
                             Name = "Vendor",
                             NormalizedName = "Vendor"
                         },
                         new
                         {
-                            Id = "6ef782de-58c5-4aff-a378-7691503cd1f2",
+                            Id = "be1f572e-318d-4ec5-b97a-2973c0777f92",
                             Name = "Joe",
                             NormalizedName = "Joe"
                         });
@@ -158,17 +158,17 @@ namespace StationProject.Migrations
                         new
                         {
                             UserId = "admin",
-                            RoleId = "727d35a5-fba7-43c2-8fef-f1e79cea5cbb"
+                            RoleId = "ac8d88c1-fe43-4865-966d-a46bd2a6d593"
                         },
                         new
                         {
                             UserId = "vendor",
-                            RoleId = "4bb0edc7-a371-4b82-af09-8884ce08b523"
+                            RoleId = "bdb03559-9cf0-4803-8d01-83f0e69534dd"
                         },
                         new
                         {
                             UserId = "joe",
-                            RoleId = "6ef782de-58c5-4aff-a378-7691503cd1f2"
+                            RoleId = "be1f572e-318d-4ec5-b97a-2973c0777f92"
                         });
                 });
 
@@ -259,13 +259,13 @@ namespace StationProject.Migrations
                         {
                             Id = "admin",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "c9c9ec00-4c40-44d8-a76f-f7e0d8651640",
+                            ConcurrencyStamp = "f180d403-86f1-41d6-9c76-4883025a598a",
                             Email = "admin@admin.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEMUr0UWwK1X7jOCj6PAlCaCcoQDfYHoo7EcjAYfSj7wRDZnGWCBjVTKFlMSY5rSRgw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELP3+rBC8vA/imJVeDAnth3KTzInFeD78Ftk7pJAlsaXddxLo8toEvzoWpPyYz07Pw====",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "3e61cd6b-eeab-482f-82a1-3e99f5eef770",
+                            SecurityStamp = "fa87f243-9001-440d-8d63-c237b18bf79f",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -273,13 +273,13 @@ namespace StationProject.Migrations
                         {
                             Id = "vendor",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2b9793a9-cacc-4278-ad82-96abc119e3e4",
+                            ConcurrencyStamp = "77979da3-54c8-45a8-8f7e-26ff90133480",
                             Email = "vendor@vendor.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEMUr0UWwK1X7jOCj6PAlCaCcoQDfYHoo7EcjAYfSj7wRDZnGWCBjVTKFlMSY5rSRgw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELP3+rBC8vA/imJVeDAnth3KTzInFeD78Ftk7pJAlsaXddxLo8toEvzoWpPyYz07Pw====",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "76d88a2c-6b52-467b-a8e2-b701f4a36799",
+                            SecurityStamp = "aaedff85-709c-46f9-890b-da9394127480",
                             TwoFactorEnabled = false,
                             UserName = "vendor"
                         },
@@ -287,13 +287,13 @@ namespace StationProject.Migrations
                         {
                             Id = "joe",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1bdae91f-b7a5-4910-b1c7-f3bb94bf0160",
+                            ConcurrencyStamp = "b74558dd-c98f-493c-a0c8-4481e0bd5026",
                             Email = "joe@joe.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEMUr0UWwK1X7jOCj6PAlCaCcoQDfYHoo7EcjAYfSj7wRDZnGWCBjVTKFlMSY5rSRgw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELP3+rBC8vA/imJVeDAnth3KTzInFeD78Ftk7pJAlsaXddxLo8toEvzoWpPyYz07Pw====",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "87e292d1-784d-45e2-ad0e-7fcff824c3ac",
+                            SecurityStamp = "a631ded4-8b9d-45a2-9c85-115267858bd3",
                             TwoFactorEnabled = false,
                             UserName = "joe"
                         });
@@ -326,7 +326,7 @@ namespace StationProject.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             ImageUrls = new[] { "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK-Vg_IFRtnL2WQsSiJFML7R22xC8i0FL11w&s" },
                             Name = "Pens"
                         });
@@ -340,10 +340,16 @@ namespace StationProject.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("SourceId")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.HasIndex("SourceId");
 
@@ -364,6 +370,10 @@ namespace StationProject.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("OrdererId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<byte>("Status")
                         .HasColumnType("smallint");
 
@@ -375,6 +385,8 @@ namespace StationProject.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrdererId");
 
                     b.ToTable("Orders");
                 });
@@ -474,8 +486,8 @@ namespace StationProject.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a7175bbe-76fd-41b6-9f66-c2d711fef135",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "4644401e-f825-490f-b985-b53325800008",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Heavy-duty stapler",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -487,8 +499,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "d9056af2-7ad0-4811-be88-abf23adca309",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "7972a853-a8f8-494c-a9a1-ed5450af129f",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "A5 ruled notebook",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -500,8 +512,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "51af25c5-a884-4e77-b797-db9eb88d35ba",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "2bed97df-7705-44c2-90f5-a8767c58c717",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Blue ballpoint pen",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -513,8 +525,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "2feb1908-dd03-4ce7-babd-7a0408ce1ead",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "31c6ac98-f295-4015-815d-fa4add3baab6",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Graphite pencil",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -526,8 +538,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "94ea4531-bf30-429f-a8e3-9169b41392aa",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "395f41df-6710-4717-9f0b-6006685a5b6a",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Fluorescent highlighter",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -539,8 +551,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "4eddb112-4c19-4949-8953-7ab519bb22d1",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "3612eaf7-c873-489a-83d0-ffde771b537c",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Box of paper clips",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -552,8 +564,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "04c23fdc-178c-462f-b6f6-a220c3d11af3",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "d2136b1a-5114-4734-a69b-a3ea0356ba07",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Pack of sticky notes",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -565,8 +577,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "d34c5804-7f9f-413d-99fd-4e0168fcb783",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "556663f6-af29-471e-8f6c-1c773b22b24b",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Set of whiteboard markers",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -578,8 +590,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "298b6f5c-71a3-410c-a880-9e64395ecb4a",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "a93a67d3-2759-499f-a7b8-6fc4ad0d6a1d",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Desktop tape dispenser",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -591,8 +603,8 @@ namespace StationProject.Migrations
                         },
                         new
                         {
-                            Id = "d1c6d3ec-c139-4062-9f94-e5df83cc0a34",
-                            CategoryKey = "d94bb42b-ee90-491d-a611-e9ccf6510194",
+                            Id = "6a4406ce-eaaf-40c2-aa74-3604732fca02",
+                            CategoryKey = "4c28f891-e6a9-47f8-b824-1804c371037f",
                             Description = "Stainless steel scissors",
                             ImageUrls = new string[0],
                             MinCount = 0,
@@ -678,7 +690,7 @@ namespace StationProject.Migrations
                 {
                     b.HasOne("StationProject.Data.Models.ApplicationUser", null)
                         .WithMany("KorzinedItems")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -693,7 +705,7 @@ namespace StationProject.Migrations
                 {
                     b.HasOne("StationProject.Data.Models.ApplicationUser", null)
                         .WithMany("Orders")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("OrdererId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

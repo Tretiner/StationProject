@@ -6,6 +6,7 @@ using StationProject.Components;
 using StationProject.Components.Account;
 using StationProject.Data;
 using StationProject.Data.Models;
+using StationProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRadzenComponents();
+
+builder.Services.AddScoped<AppNavigationManager>();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()

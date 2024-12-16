@@ -48,7 +48,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<ApplicationUser>()
             .HasMany(x => x.Orders)
             .WithOne()
-            .HasForeignKey(x => x.Id)
+            .HasForeignKey(x => x.OrdererId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ApplicationUser>()
@@ -60,7 +60,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<ApplicationUser>()
             .HasMany(x => x.KorzinedItems)
             .WithOne()
-            .HasForeignKey(x => x.Id)
+            .HasForeignKey(x => x.OwnerId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Category>()
@@ -82,7 +82,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             Id = "admin",
             UserName = "admin",
-            PasswordHash = "AQAAAAIAAYagAAAAEMUr0UWwK1X7jOCj6PAlCaCcoQDfYHoo7EcjAYfSj7wRDZnGWCBjVTKFlMSY5rSRgw==",
+            PasswordHash = "AQAAAAIAAYagAAAAELP3+rBC8vA/imJVeDAnth3KTzInFeD78Ftk7pJAlsaXddxLo8toEvzoWpPyYz07Pw====",
             EmailConfirmed = true,
             Email = "admin@admin.com",
         };
@@ -91,7 +91,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             Id = "vendor",
             UserName = "vendor",
-            PasswordHash = "AQAAAAIAAYagAAAAEMUr0UWwK1X7jOCj6PAlCaCcoQDfYHoo7EcjAYfSj7wRDZnGWCBjVTKFlMSY5rSRgw==",
+            PasswordHash = "AQAAAAIAAYagAAAAELP3+rBC8vA/imJVeDAnth3KTzInFeD78Ftk7pJAlsaXddxLo8toEvzoWpPyYz07Pw====",
             EmailConfirmed = true,
             Email = "vendor@vendor.com",
         };
@@ -100,7 +100,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             Id = "joe",
             UserName = "joe",
-            PasswordHash = "AQAAAAIAAYagAAAAEMUr0UWwK1X7jOCj6PAlCaCcoQDfYHoo7EcjAYfSj7wRDZnGWCBjVTKFlMSY5rSRgw==",
+            PasswordHash = "AQAAAAIAAYagAAAAELP3+rBC8vA/imJVeDAnth3KTzInFeD78Ftk7pJAlsaXddxLo8toEvzoWpPyYz07Pw====",
             EmailConfirmed = true,
             Email = "joe@joe.com",
         };
