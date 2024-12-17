@@ -11,9 +11,11 @@
 
 <div class="categories-section">
     <h2>Категории</h2>
-    <div class="category-chips">
-        <div class="category-item" style="align-items: center" @onclick="AddNewCategory">
-            <span style="align-self: center; font-size: 24px; font-weight: bold;">+</span>
+    <div class="category-chips f-row gap-20">
+        <div class="category-item" style="align-content: center; border: #D0AEAEAE solid 1px" @onclick="AddNewCategory">
+            <div style="display: flex; width: 100px; flex: 1; justify-content: center">
+                <span style="display: flex; font-size: 24px; font-weight: bold">+</span>
+            </div>
         </div>
         @foreach (var category in CategoryWrappers)
         {
@@ -71,45 +73,29 @@
 
     private async Task AddNewCategory()
     {
-        var result = await DialogService.OpenAsync<AddCategoryDialog>("Добавить новую категорию", null);
-        
+        var newCategory = new Category { Name = "", ImageUrls = [""] };
+        var result = await DialogService.OpenAsync<AddCategoryDialog>("Добавить новую категорию",
+            new Dictionary<string, object> { { "Category", newCategory } });
+
         if (result != null)
         {
-            var newCategory = new Category { Name = result.Name, ImageUrl = result.ImageUrl };
-            CategoryWrappers.Add(new CategoryWrapper { Category = newCategory });
+            _db.Category.Add(newCategory);
+            CategoryWrappers.Add(new CategoryWrapper(newCategory));
+            await _db.SaveChangesAsync();
         }
     }
 
     private async Task EditCategory(CategoryWrapper wrapper)
     {
-        // Open the dialog with existing category data
         var result = await DialogService.OpenAsync<AddCategoryDialog>("Редактировать категорию", new Dictionary<string, object>
         {
-            { "Name", wrapper.Category.Name },
-            { "ImageUrl", wrapper.Category.ImageUrl }
+            { "Category", wrapper.Category }
         });
 
         if (result != null)
         {
-            // Update the existing category with new values
-            wrapper.Category.Name = result.Name;
-            wrapper.Category.ImageUrl = result.ImageUrl;
-        }
-    }
-
-    private async Task HandleKeyDown(KeyboardEventArgs e, CategoryWrapper wrapper)
-    {
-        if (e.Key == "Enter")
-        {
-            // Save changes when Enter is pressed
-            wrapper.IsEditing = false;
-            _db.Category.Update(wrapper.Category);
+            _db.Category.Update(result);
             await _db.SaveChangesAsync();
-        }
-        else if (e.Key == "Escape")
-        {
-            // Cancel editing on Escape key
-            wrapper.IsEditing = false;
         }
     }
 
@@ -130,7 +116,6 @@
 
         if (result != null)
         {
-            // Refresh the product list after dialog closes
             Products = await _db.Products.ToListAsync();
         }
     }

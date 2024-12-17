@@ -13,6 +13,13 @@ public class Category : BaseEntity
 
     public string[] ImageUrls { get; set; } = null!;
 
+    [NotMapped]
+    public string FirstImageUrl
+    {
+        get => ImageUrls.FirstOrDefault() ?? "";
+        set => ImageUrls[0] = value;
+    }
+
     public ICollection<Product> Products { get; set; } = null!;
 
     public string FirstImageOrPlaceholderUrl() =>

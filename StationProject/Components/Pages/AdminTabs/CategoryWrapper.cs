@@ -2,14 +2,10 @@ using StationProject.Data.Models;
 
 namespace StationProject.Components.Pages.AdminTabs;
 
-public class CategoryWrapper
+public class CategoryWrapper(Category category)
 {
-    public Category Category { get; set; }
+    public Category Category { get; set; } = category;
     public bool IsExpanded { get; set; } = false;
     public bool IsEditing { get; set; } = false;
 
-    public CategoryWrapper(Category category)
-    {
-        Category = category;
-    }
 }

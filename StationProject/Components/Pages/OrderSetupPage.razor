@@ -1,0 +1,121 @@
+﻿@page "/OrderSetup"
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Data
+@using StationProject.Data.Models
+@using StationProject.Services
+
+@inject ApplicationDbContext _db;
+@inject AppNavigationManager _navigation;
+
+<h2>Оформление заказа</h2>
+
+@if (OrderInfo is not null)
+{
+    <div class="f-column">
+        <div class="f-column gap-20">
+            @foreach (var orderItem in OrderInfo.Items)
+            {
+                <div class="fw-row gap-10">
+                    <span>Название: @orderItem.Source.Name</span>
+                    <span>Кол-во @orderItem.Count</span>
+                    <span>Цена: @(string.Format(orderItem.Source.PriceTemplate, orderItem.Count * orderItem.Source.Price))</span>
+                </div>
+            }
+
+            <span>Всего оплачено: @OrderInfo.WholeCost</span>
+
+            <span>Введите адрес доставки</span>
+            <input type="text" @bind="AddressDostavki" placeholder="Адрес доставки"/>
+
+            <button type="submit" class="btn btn-primary" @onclick="async () => await SubmitOrder()">Подтвердить</button>
+        </div>
+    </div>
+}
+
+@code
+{
+    public string AddressDostavki { get; set; }
+    public Order OrderInfo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        OrderInfo = await _db.Orders
+            .Include(x => x.Items).ThenInclude(x => x.Source)
+            .OrderByDescending(x => x.CreatedAt)
+            .LastAsync();
+    }
+
+    public async Task SubmitOrder()
+    {
+        OrderInfo.Status++;
+        OrderInfo.StatusString = AddressDostavki;
+        _db.Orders.Update(OrderInfo);
+
+        _navigation.NavigateToProfile();
+    }
+}
+
+<style>
+    /* Основные стили для контейнера */
+    .f-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* Стили для строк с заказами */
+    .fw-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .fw-row:hover {
+        transform: scale(1.02);
+    }
+
+    /* Стили для кнопок */
+    .btn {
+        padding: 10px 15px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    /* Стили для ввода адреса */
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+        border-color: #007bff; /* Цвет рамки при фокусе */
+    }
+
+    /* Стили для общего текста */
+    span {
+        font-size: 16px;
+    }
+</style>

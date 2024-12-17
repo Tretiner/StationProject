@@ -22,6 +22,9 @@ public sealed class AppNavigationManager(
     public void NavigateToProfile() =>
         Navigate("Profile");
 
+    public void NavigateToOrderSetup() =>
+        Navigate("OrderSetup");
+
     private void Navigate(string path)
     {
         _logger.LogInformation("Nav to: {Path}", path);

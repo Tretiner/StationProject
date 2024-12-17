@@ -37,7 +37,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Category>().ToTable("Category");
+        modelBuilder.Entity<Category>().ToTable("Category")
+            .Ignore(e => e.FirstImageUrl);
 
         ConfigureRelations(modelBuilder);
         CreateDummyModels(modelBuilder);
