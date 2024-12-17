@@ -13,7 +13,10 @@ public class Order : BaseEntity
 
     public ICollection<OrderItem> Items { get; set; } = null!;
 
-    public OrderStatus Status { get; set; }
+    [MaxLength(40)]
+    public string WholeCost { get; set; } = null!;
+
+    public OrderStatus Status { get; set; } = OrderStatus.Preparing;
 
     [StringLength(100)]
     public string? StatusString { get; set; }

@@ -1,6 +1,7 @@
 @page "/Products/{CategoryId?}"
 @rendermode InteractiveServer
 
+@using StationProject.Data.Models
 @using StationProject.Domain
 @using StationProject.Services
 
@@ -11,19 +12,43 @@
     <div class="fw-row gap-20" style="padding: 20px 60px">
 
         <div class="f-column gap-1">
-            <span class="name-focusing-outlined">поиск</span>
+            <span class="name-focusing-outlined">Поиск</span>
             <input class="focusing-outlined" style="max-width: 500px;" type="text" placeholder="Введите текст для поиска..."
                    @bind="QueryText" @bind:after="@SetProducts" @bind:event="oninput"/>
         </div>
 
         <div class="f-column gap-1">
-            <span class="name-focusing-outlined">сортировать</span>
+            <span class="name-focusing-outlined">Сортировать</span>
             <select style="flex: 1; background-color: transparent;" class="focusing-outlined" @bind="OrderBy" @bind:after="@SetProducts">
                 <option value="@ProductOrder.Default">-</option>
                 <option value="@ProductOrder.Name">По имени</option>
                 <option value="@ProductOrder.Price">По цене</option>
             </select>
         </div>
+
+        @if (Categories is not null)
+        {
+            <div class="f-column gap-1">
+                <span class="name-focusing-outlined">Категории</span>
+                <div class="f-row gap-10x">
+                    @foreach (var category in Categories)
+                    {
+                        if (category.Id == CategoryId)
+                        {
+                            <div class="category-circle-selected" @onclick="() => _navigation.NavigateToProducts()" @onclick:stopPropagation="true">
+                                @category.Name
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="category-circle" @onclick="() => _navigation.NavigateToProducts(category.Id)" @onclick:stopPropagation="true">
+                                @category.Name
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
     </div>
 
     @if (ProductList.Count != 0)
@@ -31,11 +56,11 @@
         <div class="fw-row gap-20" style="padding: 20px 60px">
             @foreach (var product in ProductList)
             {
-                <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;">
+                <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;" @onclick="() => _navigation.NavigateToFullInfo(product.Id)">
                     <img src="@product.FirstImageOrPlaceholderUrl()" style="width: 100%; height: auto;">
 
                     <div class="f-column">
-                        <div class="f-column" style="padding: 10px" @onclick="() => _navigation.NavigateToFullInfo(product.Id)">
+                        <div class="f-column" style="padding: 10px">
                             <span style="font-size: 24px; height: 50px; color: #000000">@product.Name</span>
                             <div class="f-row" style="align-items: center">
                                 <span style="flex: 1; font-size: 20px; text-align: start; color: #8FA5AE">@product.VendorName</span>
@@ -49,13 +74,13 @@
                         <div class="f-row gap-10">
                             @if (product.IsAddedToCart)
                             {
-                                <button class="outlined" style="flex: 1; background-color: #039855; border-color: #00a85d; color: white" @onclick="() => _navigation.NavigateToCart()">Добавлено!</button>
+                                <button class="outlined" style="flex: 1; background-color: #039855; border-color: #00a85d; color: white" @onclick="() => _navigation.NavigateToCart()" @onclick:stopPropagation="true">Добавлено!</button>
                             }
                             else
                             {
-                                <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)">В корзину</button>
+                                <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)" @onclick:stopPropagation="true">В корзину</button>
                             }
-                            <button class="primary" style="flex: 1;" @onclick="() => _navigation.NavigateToFastItemOrder(product.Id)">Купить</button>
+                            <button class="primary" style="flex: 1;" @onclick="() => _navigation.NavigateToFastItemOrder(product.Id)" @onclick:stopPropagation="true">Купить</button>
                         </div>
                     </div>
                 </div>
@@ -72,6 +97,8 @@
 
     [Parameter]
     public string? CategoryId { get; set; }
+
+    public List<Category>? Categories { get; set; }
 
     public string QueryText = "";
     public ProductOrder OrderBy = ProductOrder.Default;

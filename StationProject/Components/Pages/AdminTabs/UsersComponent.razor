@@ -1,7 +1,93 @@
-<h3>UsersComponent</h3>
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Components.Dialogs
+@using StationProject.Data
+@using StationProject.Data.Models
+@inject ApplicationDbContext _db
+@inject DialogService DialogService
+
+<h2>Пользователи</h2>
+
+@if (Users.Count > 0)
+{
+    <div class="user-list">
+        @foreach (var user in Users)
+        {
+            <div class="user-item f-row gap-10" style="padding: 10px 16px 10px 10px" @onclick="() => EditUser(user)">
+                <div class="fw-column">
+                    <span style="font-size: 20px; font-weight: bold">@user.UserName</span>
+                    <div class="f-row gap-6">
+                        <p style="font-size: 16px; font-weight: 500">Email: @user.Email</p>
+                        <p style="font-size: 16px;">Confirmed: @(user.EmailConfirmed ? "Yes" : "No")</p>
+                    </div>
+                </div>
+                <button class="btn btn-danger" style="align-self: center" @onclick="() => DeleteUser(user.Id)" @onclick:stopPropagation="true">Удалить</button>
+            </div>
+        }
+    </div>
+}
 
 @code {
+    public List<ApplicationUser> Users { get; set; } = new();
+    public List<IdentityRole> Roles { get; set; } = new();
 
-    
+    protected override async Task OnInitializedAsync()
+    {
+        Roles = await _db.Roles.ToListAsync();
+        Users = await _db.Users.ToListAsync();
+    }
+
+    private async Task EditUser(ApplicationUser user)
+    {
+        var parameters = new Dictionary<string, object>() { { "User", user } };
+        var result = await DialogService.OpenAsync<EditUserDialog>("Edit User", parameters);
+
+        if (result != null)
+        {
+            Users = await _db.Users.ToListAsync();
+        }
+    }
+
+    private async Task DeleteUser(string id)
+    {
+        var userToDelete = await _db.Users.FindAsync(id);
+
+        if (userToDelete != null)
+        {
+            _db.Users.Remove(userToDelete);
+            await _db.SaveChangesAsync();
+            Users.Remove(userToDelete); // Remove from local list
+        }
+    }
+
+    private async Task<string> GetUserRole(ApplicationUser user)
+    {
+        var userRoleId = (await _db.UserRoles.FindAsync(user.Id)).RoleId;
+        return Roles.First(x => x.Id == userRoleId).Name;
+    }
 
 }
+
+<style>
+    .user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .user-item {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .user-item:hover {
+        background-color: #f9f9f9;
+    }
+
+    .btn-danger {
+        margin-left: 10px;
+        height:  40px;
+    }
+</style>

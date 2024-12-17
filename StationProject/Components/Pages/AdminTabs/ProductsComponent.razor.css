@@ -1,0 +1,76 @@
+.categories-section {
+    padding: 20px;
+}
+
+.category-chips {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.category-chip {
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    padding: 10px 15px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.category-chip.add-category {
+    background-color: #cce5ff; /* Light blue for add button */
+}
+
+.products-section {
+    margin-top: 20px;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-list {
+    display: flex;
+    flex-direction: column; /* Stack products vertically */
+}
+
+.product-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 10px; /* Space between product cards */
+}
+
+.product-card img {
+    max-width: 100%;
+}
+
+
+.circle-mask {
+    width: 100px;             /* Set width */
+    height: 100px;            /* Set height */
+    border-radius: 50%;       /* Create a circle */
+    /*border: 4px solid #e8ecf2; !* Border color and thickness *!*/
+    overflow: hidden;         /* Hide overflow */
+    display: flex;            /* Center the image */
+    justify-content: center;  /* Center horizontally */
+    align-items: center;      /* Center vertically */
+}
+
+.circle-mask img {
+    width: 100%;              /* Make image fill the container */
+    height: 100%;             /* Make image fill the container */
+    object-fit: cover;        /* Cover the area without distortion */
+}
+
+.category-item {
+	border-radius: 8px;
+	padding: 10px;
+    transition: box-shadow 0.3s ease; /* Smooth transition for the box shadow */
+}
+
+.category-item:hover {
+    cursor: pointer; /* Change cursor to pointer on hover */
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1); /* Box shadow effect */
+}

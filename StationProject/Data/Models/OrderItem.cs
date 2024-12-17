@@ -9,6 +9,8 @@ public class OrderItem : BaseEntity
     [Key]
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
+    public string OrderKey { get; set; }
+    public string SourceKey { get; set; }
     public Product? Source { get; set; }
 
     public int Count { get; set; } = 1;

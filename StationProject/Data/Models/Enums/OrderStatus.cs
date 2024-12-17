@@ -7,6 +7,6 @@ public enum OrderStatus : byte
     Coming,
     Arrived,
     Taken,
-    Completed,
-    Custom
+    Custom,
+    Completed
 }

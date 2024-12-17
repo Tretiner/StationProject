@@ -1,7 +1,138 @@
-<h3>ProductsComponent</h3>
+@page "/categories"
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Components.Dialogs
+@using StationProject.Data
+@using StationProject.Data.Models
+@using StationProject.Services
+
+@inject AppNavigationManager _navigation;
+@inject ApplicationDbContext _db;
+@inject DialogService DialogService;
+
+<div class="categories-section">
+    <h2>Категории</h2>
+    <div class="category-chips">
+        <div class="category-item" style="align-items: center" @onclick="AddNewCategory">
+            <span style="align-self: center; font-size: 24px; font-weight: bold;">+</span>
+        </div>
+        @foreach (var category in CategoryWrappers)
+        {
+            <div class="f-column gap-10 category-item" style="align-items: center" @onclick="@(() => EditCategory(category))">
+                <div class="circle-mask">
+                    <img src="@category.Category.FirstImageOrPlaceholderUrl()" alt="catgory"/>
+                </div>
+                <span style="align-self: center; font-size: 24px; font-weight: bold;">@category.Category.Name</span>
+            </div>
+        }
+    </div>
+</div>
+
+<h2>Продукты</h2>
+<div class="products-section">
+    @foreach (var wrapper in CategoryWrappers)
+    {
+        <div class="category-header" @onclick="@(() => ToggleProducts(wrapper))">
+            <h3>@wrapper.Category.Name</h3>
+            <button class="btn btn-primary" @onclick="@(() => OpenProductDialog(null, wrapper.Category))">Добавить продукт</button>
+        </div>
+
+        @if (wrapper.IsExpanded)
+        {
+            <div class="product-list">
+                @foreach (var product in Products.Where(p => p.CategoryKey == wrapper.Category.Id))
+                {
+                    <div class="product-card" @onclick="@(() => OpenProductDialog(product))">
+                        <img src="@product.ImageUrls.FirstOrDefault() ?? Consts.PlaceholderUrl" alt="@product.Name"/>
+                        <h4>@product.Name</h4>
+                        <p>Количество: @product.TotalCount</p>
+                        <p>Цена: @product.Price.ToString("C")</p>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
 
 @code {
+    public List<CategoryWrapper> CategoryWrappers { get; set; } = new();
+    public List<Product> Products { get; set; } = new();
 
-    
+    private string newCategoryName = string.Empty;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var categories = await _db.Category.ToListAsync();
+        CategoryWrappers = categories.Select(c => new CategoryWrapper(c)).ToList();
+        Products = await _db.Products.ToListAsync();
+    }
+
+    private async Task AddNewCategory()
+    {
+        var result = await DialogService.OpenAsync<AddCategoryDialog>("Добавить новую категорию", null);
+        
+        if (result != null)
+        {
+            var newCategory = new Category { Name = result.Name, ImageUrl = result.ImageUrl };
+            CategoryWrappers.Add(new CategoryWrapper { Category = newCategory });
+        }
+    }
+
+    private async Task EditCategory(CategoryWrapper wrapper)
+    {
+        // Open the dialog with existing category data
+        var result = await DialogService.OpenAsync<AddCategoryDialog>("Редактировать категорию", new Dictionary<string, object>
+        {
+            { "Name", wrapper.Category.Name },
+            { "ImageUrl", wrapper.Category.ImageUrl }
+        });
+
+        if (result != null)
+        {
+            // Update the existing category with new values
+            wrapper.Category.Name = result.Name;
+            wrapper.Category.ImageUrl = result.ImageUrl;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e, CategoryWrapper wrapper)
+    {
+        if (e.Key == "Enter")
+        {
+            // Save changes when Enter is pressed
+            wrapper.IsEditing = false;
+            _db.Category.Update(wrapper.Category);
+            await _db.SaveChangesAsync();
+        }
+        else if (e.Key == "Escape")
+        {
+            // Cancel editing on Escape key
+            wrapper.IsEditing = false;
+        }
+    }
+
+    private void ToggleProducts(CategoryWrapper wrapper)
+    {
+        wrapper.IsExpanded = !wrapper.IsExpanded;
+    }
+
+    private async Task OpenProductDialog(Product? product, Category? category = null)
+    {
+        var parameters = new Dictionary<string, object>()
+        {
+            { "Product", product ?? new Product { CategoryKey = category?.Id } },
+            { "Categories", CategoryWrappers.Select(cw => cw.Category).ToList() }
+        };
+
+        var result = await DialogService.OpenAsync<ProductDialog>("Редактировать Продукт", parameters);
+
+        if (result != null)
+        {
+            // Refresh the product list after dialog closes
+            Products = await _db.Products.ToListAsync();
+        }
+    }
 
 }

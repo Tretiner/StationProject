@@ -1,0 +1,73 @@
+@page "/product-dialog"
+@using StationProject.Data
+@using StationProject.Data.Models
+@inject ApplicationDbContext _db;
+@inject DialogService DialogService;
+
+<EditForm Model="@Product" OnValidSubmit="@SaveProduct">
+    <DataAnnotationsValidator/>
+
+    <RadzenTextBox Name="Name" @bind-Value="@Product.Name" Placeholder="Название продукта"/>
+    <RadzenNumeric Name="TotalCount" @bind-Value="@Product.TotalCount" Placeholder="Количество на складе"/>
+    <RadzenNumeric Name="Price" @bind-Value="@Product.Price" Placeholder="Цена продукта"/>
+    <RadzenTextBox Name="PriceTemplate" @bind-Value="@Product.PriceTemplate" Placeholder="Ценовой шаблон"/>
+    <RadzenTextBox Name="Description" @bind-Value="@Product.Description" Placeholder="Описание продукта"/>
+
+    <RadzenDropDown Data="@Categories" TextProperty="Name" ValueProperty="Id"
+                    @bind-Value="@Product.CategoryKey" Placeholder="Выберите категорию"/>
+
+    <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить"/>
+</EditForm>
+
+@code {
+    [Parameter] public Product Product { get; set; }
+    [Parameter] public List<Category> Categories { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+
+    private bool isVisible;
+
+    protected override void OnParametersSet()
+    {
+        isVisible = true;
+    }
+
+    private async Task SaveProduct()
+    {
+        if (string.IsNullOrEmpty(Product.Id)) // New product
+        {
+            Product.PublishedByKey = await GetUserId();
+            _db.Products.Add(Product);
+        }
+        else // Update existing product
+        {
+            var existingProduct = await _db.Products.FindAsync(Product.Id);
+            if (existingProduct != null)
+            {
+                existingProduct.Name = Product.Name;
+                existingProduct.TotalCount = Product.TotalCount;
+                existingProduct.Price = Product.Price;
+                existingProduct.PriceTemplate = Product.PriceTemplate;
+                existingProduct.Description = Product.Description;
+                existingProduct.CategoryKey = Product.CategoryKey;
+            }
+        }
+
+        await _db.SaveChangesAsync();
+        Close();
+    }
+
+    private void Close()
+    {
+        DialogService.Close(); // Close dialog without returning any result
+    }
+
+    async Task<string> GetUserId()
+    {
+        var user = (await authenticationStateTask).User;
+        var userid = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return userid;
+    }
+
+}

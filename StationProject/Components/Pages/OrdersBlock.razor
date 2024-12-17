@@ -1,0 +1,113 @@
+@using System.Globalization
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Data
+@using StationProject.Data.Models
+@using StationProject.Data.Models.Enums
+@using StationProject.Services
+
+@inject ApplicationDbContext _db;
+@inject AppNavigationManager _navigation;
+
+@if (ActualOrders.Count > 0 || OldOrders.Count > 0)
+{
+    if (ActualOrders.Count > 0)
+    {
+        <h2>Актуальные заказы</h2>
+
+        <div class="f-column gap-20" style="width: 800px; align-self: center">
+            @foreach (var order in ActualOrders)
+            {
+                <div class="f-column order-view-item">
+
+                    <div class="f-row space-between">
+                        <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
+
+                        <span style="font-size: 20px">Оплачено: @order.WholeCost</span>
+                    </div>
+
+                    <div class="f-row space-between">
+                        <div class="f-column gap-10">
+                            <span style="font-size: 16px">Статус: @order.Status</span>
+
+                            <span style="font-size: 14px">Ожидаемая дата: @ToRuDayNormMonth(order.ArrivalTime)</span>
+                        </div>
+
+                        <div class="f-row gap-10">
+                            @foreach (var item in order.Items.Take(4))
+                            {
+                                <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div style="height: 1px; background-color: #E0000000; flex: 1;"></div>
+
+    if (OldOrders.Count > 0)
+    {
+        <h2>Старые заказы</h2>
+
+        <div class="f-column gap-20" style="width: 800px; align-self: center">
+            @foreach (var order in OldOrders)
+            {
+                <div class="f-column order-view-item gap-10">
+
+                    <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
+
+                    <div class="f-row space-between">
+                        <div class="f-column gap-10">
+                            <span style="font-size: 16px">Статус: @order.Status</span>
+
+                            <span style="font-size: 14px">Дата приезда: @ToRuDayNormMonth(order.ArrivalTime)</span>
+                        </div>
+
+                        <div class="f-row gap-10">
+                            @foreach (var item in order.Items.Take(4))
+                            {
+                                <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <span>Ничего не заказывали</span>
+}
+
+@code {
+    public List<Order> ActualOrders { get; set; } = [];
+    public List<Order> OldOrders { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _db.SaveChangesAsync();
+        
+        var orders = await _db.Orders
+            .Include(x => x.Items).ThenInclude(x => x.Source)
+            .ToListAsync();
+
+        ActualOrders = orders.Where(x => x.Status < OrderStatus.Completed).ToList();
+        OldOrders = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
+    }
+
+
+    public static string ToRuDayNormMonth(DateTime? dateTime)
+    {
+        ArgumentNullException.ThrowIfNull(dateTime);
+
+        var russianCulture = new CultureInfo("ru-RU");
+        return dateTime.Value.ToString("d MMMM", russianCulture);
+    }
+
+
+    public string FirstImageOrPlaceholderUrl(string[] imgUrls) =>
+        imgUrls.FirstOrDefault() ?? Consts.PlaceholderUrl;
+
+}

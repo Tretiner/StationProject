@@ -1,0 +1,30 @@
+@inject DialogService DialogService
+
+<h3>@(string.IsNullOrEmpty(Name) ? "Добавить новую категорию" : "Редактировать категорию")</h3>
+
+<EditForm OnValidSubmit="@Submit">
+    <DataAnnotationsValidator/>
+
+    <div class="form-group">
+        <label>Название категории:</label>
+        <InputText @bind-Value="Name" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>URL изображения:</label>
+        <InputText @bind-Value="ImageUrl" class="form-control"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Подтвердить</button>
+    <button type="button" class="btn btn-secondary" @onclick="@DialogService.Close">Отмена</button>
+</EditForm>
+
+@code {
+    [Parameter] public string Name { get; set; }
+    [Parameter] public string ImageUrl { get; set; }
+
+    private void Submit()
+    {
+        DialogService.Close(new { Name, ImageUrl });
+    }
+}

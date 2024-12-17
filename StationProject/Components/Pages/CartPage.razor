@@ -4,6 +4,7 @@
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Data
 @using StationProject.Data.Models
+@using StationProject.Data.Models.Enums
 @using StationProject.Domain
 @using StationProject.Services
 
@@ -29,13 +30,13 @@
                         <span style="font-size: 32px; font-weight: bold">@item.Source.Price</span>
 
                         <div class="f-row gap-20" style="align-self: flex-end">
-                            <button class="trash-button" @onclick="() => _navigation.NavigateToFastItemOrder(item.Source.Id)" @onclick:stopPropagation="true">
+                            <button class="trash-button" @onclick="() => RemoveSelectedItem(item.Id)" @onclick:stopPropagation="true">
                                 <img src="images/trash_24dp.svg" alt="cart" style="width: 24px;"/>
                             </button>
                             <div class="quantity-control" style="flex: 1" @onclick:stopPropagation="true">
-                                <button @onclick="@(() => item.SelectedCount = Math.Max(1, item.SelectedCount - 1))" @onclick:stopPropagation="true">-</button>
-                                <input type="number" @bind="@item.SelectedCount" min="1" max="@item.Count"/>
-                                <button @onclick="@(() => item.SelectedCount = Math.Min(item.Count, item.SelectedCount + 1))" @onclick:stopPropagation="true">+</button>
+                                <button @onclick="@(() => item.SelectedCount--)" @onclick:stopPropagation="true">-</button>
+                                <input type="number" @bind="@item.SelectedCount" min="1"/>
+                                <button @onclick="@(() => item.SelectedCount++)" @onclick:stopPropagation="true">+</button>
                             </div>
                             <button class="primary" @onclick="() => _navigation.NavigateToFastItemOrder(item.Source.Id)" @onclick:stopPropagation="true">Купить</button>
                         </div>
@@ -64,6 +65,9 @@ else
 @code {
     public List<CartItemInfo>? CartItems { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+
     public string GetResultPrice() =>
         string.Format(
             CartItems.First().PriceTemplate,
@@ -85,12 +89,44 @@ else
                 Source: Map(x.Source)
             )
         ).ToList();
-
     }
 
-    public void MakeOrder()
+    public void RemoveSelectedItem(string itemId)
     {
-        
+        _db.KorzinaItems.Remove(_db.KorzinaItems.First(x => x.Id == itemId));
+        CartItems!.RemoveAt(CartItems.FindIndex(x => x.Id == itemId));
+    }
+
+    public async Task MakeOrder()
+    {
+        var cartItemIds = CartItems.Where(x => x.IsSelected).Select(x => x.Id).ToList();
+
+        var korzinaItems = await _db.KorzinaItems.Include(y => y.Source)
+            .Where(x => cartItemIds.Contains(x.Id)).ToListAsync();
+
+        var orderItems = CartItems.Where(x => x.IsSelected).Select(x =>
+        {
+            return new OrderItem
+            {
+                Source = korzinaItems.First(y => y.Id == x.Id).Source,
+                Count = x.SelectedCount
+            };
+        }).ToList();
+
+        await _db.Orders.AddAsync(
+            new Order
+            {
+                Items = orderItems,
+                OrdererId = await GetUserId(),
+                ArrivalTime = DateTime.Today.AddDays(2),
+                WholeCost = GetResultPrice()
+            }
+        );
+        await _db.SaveChangesAsync();
+
+        _db.KorzinaItems.RemoveRange(korzinaItems);
+        CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
+        await _db.SaveChangesAsync();
     }
 
     private static ProductShortInfo Map(Product product) => new()
@@ -102,5 +138,12 @@ else
         Price = string.Format(product.PriceTemplate, product.Price),
         IsAddedToCart = false,
     };
+
+    async Task<string> GetUserId()
+    {
+        var user = (await authenticationStateTask).User;
+        var userid = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return userid;
+    }
 
 }

@@ -25,6 +25,8 @@ public partial class CatalogPage : ComponentBase
     {
         IQueryable<Product> dbRequest;
 
+        Categories = await _dbContext.Category.ToListAsync();
+
         if (CategoryId is null)
         {
             dbRequest = _dbContext.Products.Include(x => x.PublishedBy);

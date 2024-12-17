@@ -1,0 +1,60 @@
+@page "/edit-user-dialog"
+
+@using StationProject.Data
+@using StationProject.Data.Models
+
+@inject ApplicationDbContext _db
+@inject DialogService DialogService
+
+<EditForm Model="@user" OnValidSubmit="@UpdateUser">
+    <DataAnnotationsValidator/>
+
+    <div class="form-group">
+        <label>Username:</label>
+        <InputText @bind-Value="user.UserName" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Email:</label>
+        <InputText @bind-Value="user.Email" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Phone:</label>
+        <InputText @bind-Value="user.PhoneNumber" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Email Confirmed:</label>
+        <InputCheckbox @bind-Value="user.EmailConfirmed"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update User</button>
+    <button type="button" class="btn btn-secondary" @onclick="@DialogService.Close">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter] public ApplicationUser user { get; set; }
+
+    private async Task UpdateUser()
+    {
+        var userToUpdate = await _db.Users.FindAsync(user.Id);
+
+        if (userToUpdate != null)
+        {
+            userToUpdate.UserName = user.UserName;
+            userToUpdate.Email = user.Email;
+            userToUpdate.PhoneNumber = user.PhoneNumber;
+            userToUpdate.EmailConfirmed = user.EmailConfirmed;
+
+            await _db.SaveChangesAsync();
+            DialogService.Close(true);
+        }
+    }
+}
+
+<style>
+    .form-group {
+    margin-bottom: 15px;
+}
+</style>

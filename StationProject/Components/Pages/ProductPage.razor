@@ -37,27 +37,8 @@ else
                     <span style="font-weight: bold; font-size: 40px">@Item.Price</span>
                 </div>
             </div>
-
-            <div class="f-row gap-10" style="padding: 10px 0">
-                <button class="@SelectedTabOrEmpty(0)" style="font-size: 20px; background-color: transparent"
-                        @onclick="@(() => SetSelectedTab(0))">
-                    Описание
-                </button>
-                <button class="@SelectedTabOrEmpty(1)" style="font-size: 20px; background-color: transparent"
-                        @onclick="@(() => SetSelectedTab(1))">
-                    Характеристики
-                </button>
-            </div>
-
-            @if (SelectedTabIndex == 0)
-            {
-                @Item.Description
-            }
-            else
-            {
-                <span>Характеристики</span>
-            }
-
+            
+            @Item.Description
         </div>
     </div>
 }

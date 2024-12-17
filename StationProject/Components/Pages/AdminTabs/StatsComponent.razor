@@ -28,18 +28,24 @@
 
     <RadzenChart>
         <RadzenChartTooltipOptions Shared="@sharedTooltip"/>
-        <RadzenLineSeries Smooth="@smooth" Data="@revenue2023" CategoryProperty="Date" Title="2023" LineType="LineType.Dashed" ValueProperty="Revenue">
-            <RadzenMarkers Visible="@showMarkers" MarkerType="MarkerType.Square"/>
-            <RadzenSeriesDataLabels Visible="@showDataLabels"/>
-        </RadzenLineSeries>
-        <RadzenLineSeries Smooth="@smooth" Data="@revenue2024" CategoryProperty="Date" Title="2024" ValueProperty="Revenue">
-            <RadzenMarkers Visible="@showMarkers" MarkerType="MarkerType.Circle"/>
-            <RadzenSeriesDataLabels Visible="@showDataLabels"/>
-        </RadzenLineSeries>
+        @if (ActualMonths.Count > 0)
+        {
+            <RadzenLineSeries Smooth="@smooth" Data="@ActualMonths" CategoryProperty="@nameof(MonthViews.Month)" Title="Актуальные просмотры" ValueProperty="@nameof(MonthViews.Views)">
+                <RadzenMarkers Visible="@showMarkers" MarkerType="MarkerType.Circle"/>
+                <RadzenSeriesDataLabels Visible="@showDataLabels"/>
+            </RadzenLineSeries>
+        }
+        @if (MaybeMonths.Count > 0)
+        {
+            <RadzenLineSeries Smooth="@smooth" Data="@MaybeMonths" CategoryProperty="@nameof(MonthViews.Month)" Title="Прогнозируемые просмотры" LineType="LineType.Dashed" ValueProperty="@nameof(MonthViews.Views)">
+                <RadzenMarkers Visible="@showMarkers" Fill="#E00000" MarkerType="MarkerType.Circle"/>
+                <RadzenSeriesDataLabels Visible="@showDataLabels"/>
+            </RadzenLineSeries>
+        }
         <RadzenCategoryAxis Padding="20"/>
-        <RadzenValueAxis Formatter="@FormatAsUSD">
+        <RadzenValueAxis >
             <RadzenGridLines Visible="true"/>
-            <RadzenAxisTitle Text="Revenue in USD"/>
+            <RadzenAxisTitle Text="Просмотры"/>
         </RadzenValueAxis>
     </RadzenChart>
 </RadzenStack>
@@ -50,153 +56,135 @@
     bool showDataLabels = false;
     bool showMarkers = true;
 
+    public List<MonthViews> ActualMonths { get; set; } = [];
+    public List<MonthViews> MaybeMonths { get; set; } = [];
+
     protected override async Task OnInitializedAsync()
     {
-        var m10ago = DateTime.UtcNow.AddMonths(-11);
-        var monthStats = await _db.UserActivityMonthStats.Where(x => x.CreatedAt >= m10ago).ToListAsync();
-        
-        
-        
-        
-    }
+        var m10ago = DateTime.UtcNow.AddMonths(-10);
+        var monthStats = await _db.UserActivityMonthStats
+            .Where(x => x.CreatedAt >= m10ago)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync();
 
-    class DataItem
-    {
-        public string Date { get; set; }
-        public double Revenue { get; set; }
-    }
+        ActualMonths = monthStats.Select(x => new MonthViews(
+            Views: x.TotalSiteViews,
+            Month: ToRuNormMonth(x.CreatedAt)
+        )).ToList();
 
-    string FormatAsUSD(object value)
-    {
-        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
-    }
-
-    DataItem[] revenue2023 = new DataItem[]
-    {
-        new DataItem
+        if (ActualMonths.Count < 1)
         {
-            Date = "Jan",
-            Revenue = 234000
-        },
-        new DataItem
-        {
-            Date = "Feb",
-            Revenue = 269000
-        },
-        new DataItem
-        {
-            Date = "Mar",
-            Revenue = 233000
-        },
-        new DataItem
-        {
-            Date = "Apr",
-            Revenue = 244000
-        },
-        new DataItem
-        {
-            Date = "May",
-            Revenue = 214000
-        },
-        new DataItem
-        {
-            Date = "Jun",
-            Revenue = 253000
-        },
-        new DataItem
-        {
-            Date = "Jul",
-            Revenue = 274000
-        },
-        new DataItem
-        {
-            Date = "Aug",
-            Revenue = 284000
-        },
-        new DataItem
-        {
-            Date = "Sept",
-            Revenue = 273000
-        },
-        new DataItem
-        {
-            Date = "Oct",
-            Revenue = 282000
-        },
-        new DataItem
-        {
-            Date = "Nov",
-            Revenue = 289000
-        },
-        new DataItem
-        {
-            Date = "Dec",
-            Revenue = 294000
+            return;
         }
-    };
 
-    DataItem[] revenue2024 = new DataItem[]
-    {
-        new DataItem
+        double totalGrowthRate = 0;
+        int growthCount = 0;
+
+        for (int i = 1; i < ActualMonths.Count; i++)
         {
-            Date = "Jan",
-            Revenue = 334000
-        },
-        new DataItem
-        {
-            Date = "Feb",
-            Revenue = 369000
-        },
-        new DataItem
-        {
-            Date = "Mar",
-            Revenue = 333000
-        },
-        new DataItem
-        {
-            Date = "Apr",
-            Revenue = 344000
-        },
-        new DataItem
-        {
-            Date = "May",
-            Revenue = 314000
-        },
-        new DataItem
-        {
-            Date = "Jun",
-            Revenue = 353000
-        },
-        new DataItem
-        {
-            Date = "Jul",
-            Revenue = 374000
-        },
-        new DataItem
-        {
-            Date = "Aug",
-            Revenue = 384000
-        },
-        new DataItem
-        {
-            Date = "Sept",
-            Revenue = 373000
-        },
-        new DataItem
-        {
-            Date = "Oct",
-            Revenue = 382000
-        },
-        new DataItem
-        {
-            Date = "Nov",
-            Revenue = 389000
-        },
-        new DataItem
-        {
-            Date = "Dec",
-            Revenue = 394000
+            var previousMonthViews = ActualMonths[i - 1].Views;
+            var currentMonthViews = ActualMonths[i].Views;
+
+            if (previousMonthViews > 0)
+            {
+                double growthRate = (double)(currentMonthViews - previousMonthViews) / previousMonthViews;
+                totalGrowthRate += growthRate;
+                growthCount++;
+            }
         }
-    };
+
+        double averageGrowthRate = growthCount > 0 ? totalGrowthRate / growthCount : 0;
+
+        var latestMonthView = ActualMonths.Last();
+
+        MaybeMonths =
+        [
+            latestMonthView,
+            new MonthViews(
+                Views: (long)(latestMonthView.Views * (1 + averageGrowthRate)),
+                Month: ToRuNormMonth(DateTime.UtcNow.AddMonths(1))
+            ),
+
+            new MonthViews(
+                Views: (long)(latestMonthView.Views * Math.Pow(1 + averageGrowthRate, 2)),
+                Month: ToRuNormMonth(DateTime.UtcNow.AddMonths(2))
+            )
+        ];
+    }
+/*
+ *
+ * function movingAverage(data, windowSize) {
+  if (windowSize > data.length) {
+    throw new Error("Window size must be less than or equal to the length of the data");
+  }
+  
+  const movingAverages = [];
+  for (let i = 0; i <= data.length - windowSize; i++) {
+    const window = data.slice(i, i + windowSize);
+    const avg = +(window.reduce((sum, val) => sum + val, 0) / windowSize).toFixed(2);
+    console.log(`m = (${window.join(" + ")}) / ${windowSize} = ${avg}`);
+    movingAverages.push(avg);
+  }
+  
+  return movingAverages;
+}
+
+function calcNext(data, mdata, window) {
+  const y = +(mdata[mdata.length - 1] + 1 / window * (data[data.length - 1] - data[data.length - 2])).toFixed(2);
+  console.log(`y = ${mdata[mdata.length - 1]} + 1 / ${window} * (${data[data.length - 1]} - ${data[data.length - 2]}) = ${y}`);
+  data.push(y);
+
+  const newWindow = data.slice(-window);
+  const m = +(newWindow.reduce((sum, val) => sum + val, 0) / window).toFixed(2);
+  console.log(`m = (${newWindow.join(" + ")}) / ${window} = ${m}`);
+  mdata.push(m);
+}
+
+// Исходные данные
+let data = [78, 105, 175, 154, 173, 221, 258, 133, 95, 115];
+let mdata = movingAverage(data, 3);
+
+console.log("Data:", data);
+console.log("Moving Averages:", mdata);
+
+calcNext(data, mdata, 3);
+calcNext(data, mdata, 3);
+
+console.log("Updated Data:", data);
+console.log("Updated Moving Averages:", mdata);
+
+const rs = [];
+for (let i = 1; i <= mdata.length; i++) {
+  const diff = +(data[i] - mdata[i - 1]).toFixed(2);
+  const squaredDiff = +(diff ** 2).toFixed(2);
+  const relativeError = +(Math.abs(diff) / data[i]).toFixed(2);
+  rs.push([diff, squaredDiff, relativeError]);
+}
+
+console.log("Results:");
+console.log(rs.slice(0, -2).map(row => row.join(", ")).join("\n"));
+
+let a = 0, b = 0, c = 0;
+rs.forEach(([x, y, z]) => {
+  a += x;
+  b += y;
+  c += z;
+});
+
+console.log(`Sum A: ${a}, Sum B: ${b}, Sum C: ${c}, Length: ${rs.length}`);
+console.log(`Average A: ${(a / rs.length).toFixed(2)}, Average B: ${(b / rs.length).toFixed(2)}, Average C: ${(c / rs.length).toFixed(2)}`);
+
+ */
+
+    public static string ToRuNormMonth(DateTime? dateTime)
+    {
+        ArgumentNullException.ThrowIfNull(dateTime);
+        return dateTime.Value.ToString("MMMM", new CultureInfo("ru-RU"));
+    }
+
+    public record MonthViews(
+        long Views,
+        string Month
+    );
 
 }

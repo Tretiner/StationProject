@@ -19,6 +19,9 @@ public sealed class AppNavigationManager(
     public void NavigateToCart() =>
         Navigate("Cart");
 
+    public void NavigateToProfile() =>
+        Navigate("Profile");
+
     private void Navigate(string path)
     {
         _logger.LogInformation("Nav to: {Path}", path);

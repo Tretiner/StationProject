@@ -72,8 +72,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Order>()
             .HasMany(x => x.Items)
             .WithOne()
-            .HasForeignKey(x => x.Id)
+            .HasForeignKey(x => x.OrderKey)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<OrderItem>()
+            .HasOne<Product>(x => x.Source)
+            .WithOne()
+            .HasForeignKey<OrderItem>(x => x.SourceKey)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void CreateDummyModels(ModelBuilder modelBuilder)

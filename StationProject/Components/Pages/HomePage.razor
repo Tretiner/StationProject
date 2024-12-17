@@ -7,7 +7,7 @@
 @using StationProject.Services
 
 @inject AppNavigationManager _navigation
-@inject ApplicationDbContext DbContext;
+@inject ApplicationDbContext _db;
 
 <PageTitle>Home</PageTitle>
 
@@ -56,6 +56,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Categories = Enumerable.Repeat(await DbContext.Category.FirstAsync(), 5).ToList();
+        Categories = Enumerable.Repeat(await _db.Category.FirstAsync(), 5).ToList();
+        
+        // var now = DateTime.Today;
+        // var nowMonthStats = await _db.UserActivityMonthStats.FirstOrDefaultAsync(x => x.CreatedAt.Value.Month == now.Month && x.CreatedAt.Value.Year == now.Year);
+        // if (nowMonthStats is not null)
+        // {
+        //     nowMonthStats.TotalSiteViews++;
+        //     _db.UserActivityMonthStats.Update(nowMonthStats);
+        // }
+        // else
+        // {
+        //     _db.UserActivityMonthStats.Add(new UserActivityMonthStat
+        //     {
+        //         TotalSiteViews = 1,
+        //     });
+        // }
+        //
+        // await _db.SaveChangesAsync();
     }
+
 }
