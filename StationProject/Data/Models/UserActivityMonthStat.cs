@@ -1,12 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace StationProject.Data.Models;
 
-public class UserActivityMonthStat : BaseEntity
+public sealed class UserMonthlyActivityStat : BaseEntity
 {
-    [Key]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public int Id { get; set; }
 
     public required long TotalSiteViews { get; set; }
 }

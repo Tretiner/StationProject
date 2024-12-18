@@ -1,25 +1,23 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using StationProject.Data.Models.Enums;
 
 namespace StationProject.Data.Models;
 
-public class OrderItem : BaseEntity
+public sealed class OrderItem : BaseEntity
 {
-    [Key]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public int Id { get; set; }
 
-    public string OrderKey { get; set; }
-    public string SourceKey { get; set; }
-    public Product? Source { get; set; }
+    public int OrderKey { get; set; }
+    public Order Order { get; set; } = null!;
 
-    public int Count { get; set; } = 1;
+    public int ProductId { get; set; }
+    public Product Product { get; set; } = null!;
+
+    public int Count { get; set; }
 
     public OrderItemStatus Status { get; set; } = OrderItemStatus.Preparing;
 
-    [StringLength(100)]
-    public string? StatusString { get; set; }
+    public DateTimeOffset ArrivesAt { get; set; }
+    public int ArrivalDelayedTimes { get; set; }
 
-    public DateTime ArrivalTime { get; set; }
-    public int ArrivalMovedCount { get; set; }
+    public string? ItemStatusExtraDesc { get; set; }
 }

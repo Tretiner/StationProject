@@ -22,7 +22,7 @@
                     <div class="f-row space-between">
                         <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
 
-                        <span style="font-size: 20px">Оплачено: @order.WholeCost</span>
+                        @* <span style="font-size: 20px">Оплачено: @order.WholeCost</span> *@
                     </div>
 
                     <div class="f-row space-between">
@@ -35,7 +35,7 @@
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
-                                <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/>
+                                @* <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/> *@
                             }
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
-                                <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/>
+                                @* <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/> *@
                             }
                         </div>
                     </div>
@@ -89,16 +89,16 @@ else
     {
         await _db.SaveChangesAsync();
         
-        var orders = await _db.Orders
-            .Include(x => x.Items).ThenInclude(x => x.Source)
-            .ToListAsync();
+        // var orders = await _db.Orders
+        //     .Include(x => x.Items).ThenInclude(x => x.Source)
+            // .ToListAsync();
 
-        ActualOrders = orders.Where(x => x.Status < OrderStatus.Completed).ToList();
-        OldOrders = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
+        // ActualOrders = orders.Where(x => x.Status < OrderStatus.Completed).ToList();
+        // OldOrders = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
     }
 
 
-    public static string ToRuDayNormMonth(DateTime? dateTime)
+    public static string ToRuDayNormMonth(DateTimeOffset? dateTime)
     {
         ArgumentNullException.ThrowIfNull(dateTime);
 

@@ -17,11 +17,12 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
         <PackageReference Include="Radzen.Blazor" Version="*" />
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Data\Migrations\" />
+      <Folder Include="Migrations\" />
       <Folder Include="wwwroot\images\" />
     </ItemGroup>
 </Project>

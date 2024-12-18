@@ -14,7 +14,7 @@ public partial class ProductPage : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         var product = await _dbContext.Products
-            .Include(x => x.PublishedBy)
+            .Include(x => x.Vendor)
             .FirstOrDefaultAsync(x => x.Id == ProductId);
 
         if (product is not null)
@@ -26,11 +26,11 @@ public partial class ProductPage : ComponentBase
     private static ProductInfo Map(Product product) => new()
     {
         Id = product.Id,
-        ImageUrls = product.ImageUrls,
+        ImageUrls = product.Images.Select(x => x.Url).ToArray(),
         Name = product.Name,
         Description = product.Description,
-        VendorName = product.PublishedBy.UserName,
-        Price = string.Format(product.PriceTemplate, product.Price),
+        VendorName = product.Vendor.UserName,
+        Price = product.Price.FormattedPrice,
         IsAddedToCart = false,
     };
 

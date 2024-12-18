@@ -1,20 +1,15 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using StationProject.Data.Models.Enums;
 
 namespace StationProject.Data.Models;
 
-public class Category : BaseEntity
+public sealed class Category : BaseEntity
 {
-    [Key]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public int Id { get; set; }
+    public Language Language { get; set; }
 
-    [StringLength(50)]
     public string Name { get; set; } = null!;
 
-    public string[] ImageUrls { get; set; } = null!;
+    public string ImageUrls { get; set; } = null!;
 
     public ICollection<Product> Products { get; set; } = null!;
-
-    public string FirstImageOrPlaceholderUrl() =>
-        ImageUrls.FirstOrDefault() ?? Consts.PlaceholderUrl;
 }

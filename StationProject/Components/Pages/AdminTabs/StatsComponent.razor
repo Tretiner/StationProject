@@ -176,7 +176,7 @@ console.log(`Average A: ${(a / rs.length).toFixed(2)}, Average B: ${(b / rs.leng
 
  */
 
-    public static string ToRuNormMonth(DateTime? dateTime)
+    public static string ToRuNormMonth(DateTimeOffset? dateTime)
     {
         ArgumentNullException.ThrowIfNull(dateTime);
         return dateTime.Value.ToString("MMMM", new CultureInfo("ru-RU"));

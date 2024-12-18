@@ -33,18 +33,18 @@
                 <div class="f-row gap-10x">
                     @foreach (var category in Categories)
                     {
-                        if (category.Id == CategoryId)
-                        {
-                            <div class="category-circle-selected" @onclick="() => _navigation.NavigateToProducts()" @onclick:stopPropagation="true">
-                                @category.Name
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="category-circle" @onclick="() => _navigation.NavigateToProducts(category.Id)" @onclick:stopPropagation="true">
-                                @category.Name
-                            </div>
-                        }
+                        @* if (category.Id == CategoryId) *@
+                        @* { *@
+                        @*     <div class="category-circle-selected" @onclick="() => _navigation.NavigateToProducts()" @onclick:stopPropagation="true"> *@
+                        @*         @category.Name *@
+                        @*     </div> *@
+                        @* } *@
+                        @* else *@
+                        @* { *@
+                        @*     <div class="category-circle" @onclick="() => _navigation.NavigateToProducts(category.Id)" @onclick:stopPropagation="true"> *@
+                        @*         @category.Name *@
+                        @*     </div> *@
+                        @* } *@
                     }
                 </div>
             </div>
@@ -105,14 +105,14 @@
 
     public async Task AddOrIncrementToCart(ProductShortInfo product)
     {
-        await Task.Run(async () =>
-        {
-            if (!product.IsAddedToCart)
-            {
-                product.IsAddedToCart = true;
-                await AddOrIncrementKorzinaItem(product.Id);
-            }
-        });
+        // await Task.Run(async () =>
+        // {
+        //     if (!product.IsAddedToCart)
+        //     {
+        //         product.IsAddedToCart = true;
+        //         await AddOrIncrementKorzinaItem(product.Id);
+        //     }
+        // });
     }
 
 }

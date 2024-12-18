@@ -21,7 +21,7 @@
                         <p style="font-size: 16px;">Confirmed: @(user.EmailConfirmed ? "Yes" : "No")</p>
                     </div>
                 </div>
-                <button class="btn btn-danger" style="align-self: center" @onclick="() => DeleteUser(user.Id)" @onclick:stopPropagation="true">Удалить</button>
+                @* <button class="btn btn-danger" style="align-self: center" @onclick="() => DeleteUser(user.Id)" @onclick:stopPropagation="true">Удалить</button> *@
             </div>
         }
     </div>
@@ -29,12 +29,12 @@
 
 @code {
     public List<ApplicationUser> Users { get; set; } = new();
-    public List<IdentityRole> Roles { get; set; } = new();
+    public List<ApplicationRole> Roles { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Roles = await _db.Roles.ToListAsync();
-        Users = await _db.Users.ToListAsync();
+        // Roles = await _db.Roles.ToListAsync();
+        // Users = await _db.Users.ToListAsync();
     }
 
     private async Task EditUser(ApplicationUser user)

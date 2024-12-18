@@ -4,7 +4,6 @@
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Data
 @using StationProject.Data.Models
-@using StationProject.Data.Models.Enums
 @using StationProject.Domain
 @using StationProject.Services
 
@@ -76,68 +75,68 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var korzinaItems = await _db.KorzinaItems
-            .Include(x => x.Source).ThenInclude(x => x.PublishedBy)
-            .ToListAsync();
-
-        CartItems = korzinaItems.Select(x =>
-            new CartItemInfo(
-                Id: x.Id,
-                Price: x.Source.Price,
-                PriceTemplate: x.Source.PriceTemplate,
-                Count: x.Count,
-                Source: Map(x.Source)
-            )
-        ).ToList();
+        // var korzinaItems = await _db.Cart
+        //     .Include(x => x.Source).ThenInclude(x => x.Vendor)
+        //     .ToListAsync();
+        //
+        // CartItems = korzinaItems.Select(x =>
+        //     new CartItemInfo(
+        //         Id: x.Id,
+        //         Price: x.Source.Price,
+        //         PriceTemplate: x.Source.PriceTemplate,
+        //         Count: x.Count,
+        //         Source: Map(x.Source)
+        //     )
+        // ).ToList();
     }
 
     public void RemoveSelectedItem(string itemId)
     {
-        _db.KorzinaItems.Remove(_db.KorzinaItems.First(x => x.Id == itemId));
-        CartItems!.RemoveAt(CartItems.FindIndex(x => x.Id == itemId));
+        // _db.KorzinaItems.Remove(_db.KorzinaItems.First(x => x.Id == itemId));
+        // CartItems!.RemoveAt(CartItems.FindIndex(x => x.Id == itemId));
     }
 
     public async Task MakeOrder()
     {
         var cartItemIds = CartItems.Where(x => x.IsSelected).Select(x => x.Id).ToList();
 
-        var korzinaItems = await _db.KorzinaItems.Include(y => y.Source)
-            .Where(x => cartItemIds.Contains(x.Id)).ToListAsync();
-
-        var orderItems = CartItems.Where(x => x.IsSelected).Select(x =>
-        {
-            return new OrderItem
-            {
-                Source = korzinaItems.First(y => y.Id == x.Id).Source,
-                Count = x.SelectedCount
-            };
-        }).ToList();
-
-        await _db.Orders.AddAsync(
-            new Order
-            {
-                Items = orderItems,
-                OrdererId = await GetUserId(),
-                ArrivalTime = DateTime.Today.AddDays(2),
-                WholeCost = GetResultPrice()
-            }
-        );
-        await _db.SaveChangesAsync();
-
-        _db.KorzinaItems.RemoveRange(korzinaItems);
-        CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
-        await _db.SaveChangesAsync();
+        // var korzinaItems = await _db.KorzinaItems.Include(y => y.Source)
+        //     .Where(x => cartItemIds.Contains(x.Id)).ToListAsync();
+        //
+        // var orderItems = CartItems.Where(x => x.IsSelected).Select(x =>
+        // {
+        //     return new OrderItem
+        //     {
+        //         Source = korzinaItems.First(y => y.Id == x.Id).Source,
+        //         Count = x.SelectedCount
+        //     };
+        // }).ToList();
+        //
+        // await _db.Orders.AddAsync(
+        //     new Order
+        //     {
+        //         Items = orderItems,
+        //         OrdererId = await GetUserId(),
+        //         ArrivalTime = DateTime.Today.AddDays(2),
+        //         WholeCost = GetResultPrice()
+        //     }
+        // );
+        // await _db.SaveChangesAsync();
+        //
+        // _db.KorzinaItems.RemoveRange(korzinaItems);
+        // CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
+        // await _db.SaveChangesAsync();
     }
 
-    private static ProductShortInfo Map(Product product) => new()
-    {
-        Id = product.Id,
-        ImageUrls = product.ImageUrls,
-        Name = product.Name,
-        VendorName = product.PublishedBy.UserName,
-        Price = string.Format(product.PriceTemplate, product.Price),
-        IsAddedToCart = false,
-    };
+    // private static ProductShortInfo Map(Product product) => new()
+    // {
+    //     Id = product.Id,
+    //     ImageUrls = product.ImageUrls,
+    //     Name = product.Name,
+    //     VendorName = product.Vendor.UserName,
+    //     Price = string.Format(product.PriceTemplate, product.Price),
+    //     IsAddedToCart = false,
+    // };
 
     async Task<string> GetUserId()
     {

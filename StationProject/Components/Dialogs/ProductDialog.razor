@@ -8,13 +8,13 @@
     <DataAnnotationsValidator/>
 
     <RadzenTextBox Name="Name" @bind-Value="@Product.Name" Placeholder="Название продукта"/>
-    <RadzenNumeric Name="TotalCount" @bind-Value="@Product.TotalCount" Placeholder="Количество на складе"/>
+    @* <RadzenNumeric Name="TotalCount" @bind-Value="@Product.TotalCount" Placeholder="Количество на складе"/> *@
     <RadzenNumeric Name="Price" @bind-Value="@Product.Price" Placeholder="Цена продукта"/>
-    <RadzenTextBox Name="PriceTemplate" @bind-Value="@Product.PriceTemplate" Placeholder="Ценовой шаблон"/>
+    @* <RadzenTextBox Name="PriceTemplate" @bind-Value="@Product.PriceTemplate" Placeholder="Ценовой шаблон"/> *@
     <RadzenTextBox Name="Description" @bind-Value="@Product.Description" Placeholder="Описание продукта"/>
 
     <RadzenDropDown Data="@Categories" TextProperty="Name" ValueProperty="Id"
-                    @bind-Value="@Product.CategoryKey" Placeholder="Выберите категорию"/>
+                    @bind-Value="@Product.CategoryId" Placeholder="Выберите категорию"/>
 
     <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить"/>
 </EditForm>
@@ -35,27 +35,27 @@
 
     private async Task SaveProduct()
     {
-        if (string.IsNullOrEmpty(Product.Id)) // New product
-        {
-            Product.PublishedByKey = await GetUserId();
-            _db.Products.Add(Product);
-        }
-        else // Update existing product
-        {
-            var existingProduct = await _db.Products.FindAsync(Product.Id);
-            if (existingProduct != null)
-            {
-                existingProduct.Name = Product.Name;
-                existingProduct.TotalCount = Product.TotalCount;
-                existingProduct.Price = Product.Price;
-                existingProduct.PriceTemplate = Product.PriceTemplate;
-                existingProduct.Description = Product.Description;
-                existingProduct.CategoryKey = Product.CategoryKey;
-            }
-        }
-
-        await _db.SaveChangesAsync();
-        Close();
+        // if (string.IsNullOrEmpty(Product.Id)) // New product
+        // {
+        //     Product.VendorId = await GetUserId();
+        //     _db.Products.Add(Product);
+        // }
+        // else // Update existing product
+        // {
+        //     var existingProduct = await _db.Products.FindAsync(Product.Id);
+        //     if (existingProduct != null)
+        //     {
+        //         existingProduct.Name = Product.Name;
+        //         // existingProduct.TotalCount = Product.TotalCount;
+        //         existingProduct.Price = Product.Price;
+        //         // existingProduct.PriceTemplate = Product.PriceTemplate;
+        //         existingProduct.Description = Product.Description;
+        //         existingProduct.CategoryId = Product.CategoryId;
+        //     }
+        // }
+        //
+        // await _db.SaveChangesAsync();
+        // Close();
     }
 
     private void Close()

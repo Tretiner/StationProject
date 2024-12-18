@@ -1,6 +1,6 @@
 namespace StationProject.Data.Models.Enums;
 
-public enum OrderItemStatus
+public enum OrderItemStatus : byte
 {
     Preparing,
     Sent,

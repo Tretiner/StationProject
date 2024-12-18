@@ -31,7 +31,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         options.EnableSensitiveDataLogging();
-        options.UseNpgsql(connectionString);
+        options.UseSqlite(connectionString);
     },
     ServiceLifetime.Transient
 );
@@ -41,7 +41,7 @@ builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<AppNavigationManager>();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()
+    .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
