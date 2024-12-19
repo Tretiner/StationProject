@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
+using StationProject;
 using StationProject.Components;
 using StationProject.Components.Account;
 using StationProject.Data;
@@ -32,8 +33,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         options.EnableSensitiveDataLogging();
         options.UseSqlite(connectionString);
-    },
-    ServiceLifetime.Transient
+    }
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRadzenComponents();
@@ -49,6 +49,17 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
+
+// Ensure the database is created and seeded
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    await dbContext.Database.EnsureDeletedAsync();
+    await dbContext.Database.EnsureCreatedAsync();
+
+    await DbDataSeeder.SeedTestData(dbContext);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -11,7 +11,7 @@ using StationProject.Data;
 namespace StationProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241218160430_Initial")]
+    [Migration("20241218181128_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -251,7 +251,7 @@ namespace StationProject.Migrations
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageUrls")
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

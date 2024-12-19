@@ -46,7 +46,7 @@ public static class ApplicationDbContextRelations
         {
             entity.HasKey(c => new { c.Id, c.Language });
             entity.Property(c => c.Name).IsRequired();
-            entity.Property(c => c.ImageUrls).IsRequired();
+            entity.Property(c => c.ImageUrl).IsRequired();
 
             entity.HasMany(c => c.Products)
                 .WithOne(p => p.Category)

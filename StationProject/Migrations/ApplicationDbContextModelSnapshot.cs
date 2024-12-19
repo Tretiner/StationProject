@@ -248,7 +248,7 @@ namespace StationProject.Migrations
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImageUrls")
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

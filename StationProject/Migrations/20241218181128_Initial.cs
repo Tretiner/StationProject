@@ -60,7 +60,7 @@ namespace StationProject.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false),
                     Language = table.Column<byte>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ImageUrls = table.Column<string>(type: "TEXT", nullable: false),
+                    ImageUrl = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: true)
                 },

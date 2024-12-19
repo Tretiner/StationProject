@@ -7,7 +7,7 @@ public sealed class AppNavigationManager(
     ILogger<AppNavigationManager> _logger
 )
 {
-    public void NavigateToProducts(string? categoryId = null) =>
+    public void NavigateToProducts(int? categoryId = null) =>
         Navigate($"Products/{categoryId}");
 
     public void NavigateToFastItemOrder(string productId) =>

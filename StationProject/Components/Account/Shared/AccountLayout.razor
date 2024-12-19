@@ -2,14 +2,16 @@
 @layout StationProject.Components.Layout.MainLayout
 @inject NavigationManager NavigationManager
 
-@if (HttpContext is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    @Body
-}
+<article class="content px-4">
+    @if (HttpContext is null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        @Body
+    }
+</article>
 
 @code {
 
@@ -28,3 +30,4 @@ else
     }
 
 }
+

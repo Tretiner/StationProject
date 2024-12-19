@@ -11,15 +11,15 @@
     <NavLink href="/">
         <span class="site-header">HeaderCustom</span>
 
-        <AuthorizeView Roles="Joe">
-            <span class="sub-header">Joe</span>
-        </AuthorizeView>
-        <AuthorizeView Roles="Vendor">
-            <span class="sub-header">Vendor</span>
-        </AuthorizeView>
-        <AuthorizeView Roles="Admin">
-            <span class="sub-header">Admin</span>
-        </AuthorizeView>
+        @* <AuthorizeView Roles="Joe"> *@
+        @*     <span class="sub-header">Joe</span> *@
+        @* </AuthorizeView> *@
+        @* <AuthorizeView Roles="Vendor"> *@
+        @*     <span class="sub-header">Vendor</span> *@
+        @* </AuthorizeView> *@
+        @* <AuthorizeView Roles="Admin"> *@
+        @*     <span class="sub-header">Admin</span> *@
+        @* </AuthorizeView> *@
     </NavLink>
 
     <RadzenStack
@@ -28,13 +28,13 @@
         Wrap="FlexWrap.Wrap"
         Gap="20px">
 
-        <AuthorizeView Roles="Admin, Vendor">
-            <NavLink class="nav-tab" href="Admin">
-                <div class="f-nav-item">
-                    <span>Control panel</span>
-                </div>
-            </NavLink>
-        </AuthorizeView>
+        @* <AuthorizeView Roles="Admin, Vendor"> *@
+        @*     <NavLink class="nav-tab" href="Admin"> *@
+        @*         <div class="f-nav-item"> *@
+        @*             <span>Control panel</span> *@
+        @*         </div> *@
+        @*     </NavLink> *@
+        @* </AuthorizeView> *@
 
         <NavLink class="nav-tab" href="Cart">
             <div class="f-nav-item">
