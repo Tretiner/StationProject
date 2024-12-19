@@ -1,11 +1,17 @@
 @page "/Products/{CategoryId?}"
 @rendermode InteractiveServer
 
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Data
 @using StationProject.Data.Models
 @using StationProject.Domain
 @using StationProject.Services
 
 @inject AppNavigationManager _navigation
+@inject ApplicationDbContext _db
+@inject UserManager<ApplicationUser> _userManager
 @inject ILogger<CatalogPage> Logger
 
 <div class="f-column">
@@ -31,20 +37,23 @@
             <div class="f-column gap-1">
                 <span class="name-focusing-outlined">Категории</span>
                 <div class="f-row gap-10x">
+                    @{
+                        var categoryId = CategoryId is not null ? int.Parse(CategoryId) : 0;
+                    }
                     @foreach (var category in Categories)
                     {
-                        @* if (category.Id == CategoryId) *@
-                        @* { *@
-                        @*     <div class="category-circle-selected" @onclick="() => _navigation.NavigateToProducts()" @onclick:stopPropagation="true"> *@
-                        @*         @category.Name *@
-                        @*     </div> *@
-                        @* } *@
-                        @* else *@
-                        @* { *@
-                        @*     <div class="category-circle" @onclick="() => _navigation.NavigateToProducts(category.Id)" @onclick:stopPropagation="true"> *@
-                        @*         @category.Name *@
-                        @*     </div> *@
-                        @* } *@
+                        if (category.Id == categoryId)
+                        {
+                            <div class="category-circle-selected" @onclick="() => _navigation.NavigateToProducts()" @onclick:stopPropagation="true">
+                                @category.Name
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="category-circle" @onclick="() => _navigation.NavigateToProducts(category.Id)" @onclick:stopPropagation="true">
+                                @category.Name
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -57,7 +66,7 @@
             @foreach (var product in ProductList)
             {
                 <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;" @onclick="() => _navigation.NavigateToFullInfo(product.Id)">
-                    <img src="@product.FirstImageOrPlaceholderUrl()" style="width: 100%; height: auto;">
+                    <img src="@product.ImageUrl" style="width: 100%; height: auto;">
 
                     <div class="f-column">
                         <div class="f-column" style="padding: 10px">
@@ -95,6 +104,9 @@
 
 @code {
 
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+
     [Parameter]
     public string? CategoryId { get; set; }
 
@@ -105,14 +117,106 @@
 
     public async Task AddOrIncrementToCart(ProductShortInfo product)
     {
-        // await Task.Run(async () =>
-        // {
-        //     if (!product.IsAddedToCart)
-        //     {
-        //         product.IsAddedToCart = true;
-        //         await AddOrIncrementKorzinaItem(product.Id);
-        //     }
-        // });
+        if (!product.IsAddedToCart)
+        {
+            product.IsAddedToCart = true;
+            await AddOrIncrementKorzinaItem(product.Id);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SetProducts();
+    }
+
+    private async Task SetProducts()
+    {
+        IQueryable<Product> dbRequest;
+
+        Categories = await _db.Categories.ToListAsync();
+
+        if (CategoryId is null)
+        {
+            dbRequest = _db.Products
+                .Include(x => x.Vendor)
+                .Include(x => x.Category)
+                .Include(x => x.Images)
+                .Include(x => x.Price).ThenInclude(x => x.Template);
+        }
+        else
+        {
+            var categoryId = int.Parse(CategoryId);
+            dbRequest = _db.Categories
+                .Include(x => x.Products).ThenInclude(x => x.Vendor)
+                .Include(x => x.Products).ThenInclude(x => x.Category)
+                .Include(x => x.Products).ThenInclude(x => x.Images)
+                .Include(x => x.Products).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
+                .Where(x => x.Id == categoryId)
+                .SelectMany(x => x.Products);
+        }
+
+        dbRequest = OrderBy switch
+        {
+            ProductOrder.Name => dbRequest.OrderBy(x => x.Name),
+            ProductOrder.Price => dbRequest.OrderBy(x => x.Price),
+            _ => dbRequest,
+        };
+
+        IEnumerable<Product> products = await dbRequest.ToListAsync();
+
+        var words = QueryText.Split();
+        if (words.Length > 0)
+        {
+            products = products.Where(x => words.Any(w => x.Name.Contains(w, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        ProductList = products.Select(Map).ToList();
+    }
+
+    private static ProductShortInfo Map(Product product) => new()
+    {
+        Id = product.Id,
+        ImageUrl = product.Images.First().Url,
+        Name = product.Name,
+        VendorName = product.Vendor.UserName,
+        Price = product.Price.FormattedPrice,
+        IsAddedToCart = false,
+    };
+
+    public List<ProductShortInfo> ProductList { get; set; } = [];
+
+    private async Task AddOrIncrementKorzinaItem(int productId)
+    {
+        var existingItem = await _db.Cart
+            .FirstOrDefaultAsync(x => x.ProductId == productId);
+
+        if (existingItem is not null)
+        {
+            existingItem.Count++;
+            _db.Cart.Update(existingItem);
+            Logger.LogInformation($"Updated item: {existingItem.Id}");
+        }
+        else
+        {
+            var userId = await authenticationStateTask.GetUserIdAsync();
+
+            if (userId is null)
+            {
+                return;
+            }
+
+            var newItem = new CartItem
+            {
+                Product = await _db.Products.FirstAsync(x => x.Id == productId),
+                Count = 1,
+                UserId = userId.Value
+            };
+
+            await _db.Cart.AddAsync(newItem);
+            Logger.LogInformation($"Added item: {newItem.Product.Name} {newItem.Id}");
+        }
+
+        await _db.SaveChangesAsync();
     }
 
 }

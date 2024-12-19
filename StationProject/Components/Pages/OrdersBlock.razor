@@ -22,7 +22,7 @@
                     <div class="f-row space-between">
                         <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
 
-                        @* <span style="font-size: 20px">Оплачено: @order.WholeCost</span> *@
+                        <span style="font-size: 20px">Оплачено: @GetWholeCost(order)</span>
                     </div>
 
                     <div class="f-row space-between">
@@ -35,7 +35,9 @@
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
-                                @* <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/> *@
+                                <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.Id)">
+                                    <img src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
+                                </div>
                             }
                         </div>
                     </div>
@@ -55,7 +57,11 @@
             {
                 <div class="f-column order-view-item gap-10">
 
-                    <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
+                    <div class="f-row space-between">
+                        <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
+
+                        <span style="font-size: 20px">Оплачено: @GetWholeCost(order)</span>
+                    </div>
 
                     <div class="f-row space-between">
                         <div class="f-column gap-10">
@@ -67,7 +73,9 @@
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
-                                @* <img style="width: 90px; height: 90px" src="@FirstImageOrPlaceholderUrl(item.Source.ImageUrls)" @onclick="() => _navigation.NavigateToFullInfo(item.Id)"/> *@
+                                <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.Id)">
+                                    <img src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
+                                </div>
                             }
                         </div>
                     </div>
@@ -88,13 +96,16 @@ else
     protected override async Task OnInitializedAsync()
     {
         await _db.SaveChangesAsync();
-        
-        // var orders = await _db.Orders
-        //     .Include(x => x.Items).ThenInclude(x => x.Source)
-            // .ToListAsync();
 
-        // ActualOrders = orders.Where(x => x.Status < OrderStatus.Completed).ToList();
-        // OldOrders = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
+        var orders = await _db.Orders
+            .Include(x => x.Items).ThenInclude(x => x.Product).ThenInclude(x => x.Vendor)
+            .Include(x => x.Items).ThenInclude(x => x.Product).ThenInclude(x => x.Category)
+            .Include(x => x.Items).ThenInclude(x => x.Product).ThenInclude(x => x.Images)
+            .Include(x => x.Items).ThenInclude(x => x.Product).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
+            .ToListAsync();
+
+        ActualOrders = orders.Where(x => x.Status < OrderStatus.Completed).ToList();
+        OldOrders = orders.Where(x => x.Status == OrderStatus.Completed).ToList();
     }
 
 
@@ -106,8 +117,10 @@ else
         return dateTime.Value.ToString("d MMMM", russianCulture);
     }
 
-
-    public string FirstImageOrPlaceholderUrl(string[] imgUrls) =>
-        imgUrls.FirstOrDefault() ?? Consts.PlaceholderUrl;
+    private string GetWholeCost(Order order)
+    {
+        var priceTemplate = order.Items.First().Product.Price.Template.Value;
+        return string.Format(priceTemplate, order.Items.Sum(x => x.Product.Price.Value));
+    }
 
 }

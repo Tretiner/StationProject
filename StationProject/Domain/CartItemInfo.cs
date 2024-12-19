@@ -1,9 +1,9 @@
 namespace StationProject.Domain;
 
 public sealed record CartItemInfo(
-    string Id,
+    int Id,
     int Count,
-    int Price,
+    double Price,
     string PriceTemplate,
     ProductShortInfo Source
 )

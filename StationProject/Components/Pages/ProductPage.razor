@@ -1,9 +1,14 @@
-@page "/Product/{ProductId?}"
+@page "/Product/{productId?}"
 @rendermode InteractiveServer
 
+@using Microsoft.EntityFrameworkCore
+@using StationProject.Data
+@using StationProject.Data.Models
 @using StationProject.Domain
 
-@if (ProductId is null)
+@inject ApplicationDbContext _db;
+
+@if (productId is null)
 {
     <span>Product is loading</span>
 }
@@ -27,38 +32,85 @@ else
             </div>
         </div>
 
-        <div class="f-column gap-10" style="padding: 10px 20px">
+        <div class="f-column gap-10" style="padding: 10px 20px; width: 100%">
             <span style="font-size: 48px;">@Item.Name</span>
 
-            <div class="fw-row space-between">
-                <span style="font-weight: bold; font-size: 40px">@Item.VendorName</span>
+            <div class="fw-row gap-20" style="text-align: center">
+                <span style="font-size: 32px">@Item.VendorName //</span>
 
-                <div class="fw-row gap-20">
-                    <span style="font-weight: bold; font-size: 40px">@Item.Price</span>
-                </div>
+                <span style="font-weight: bold; font-size: 40px">@Item.Price</span>
             </div>
-            
-            @Item.Description
+
+
+            <div class="f-row gap-20">
+                <button class="tab-button @GetSelectedButtonStyle(ProductTab.Desc)" @onclick="() => SelectTab(ProductTab.Desc)">Описание</button>
+                <button class="tab-button @GetSelectedButtonStyle(ProductTab.Char)" @onclick="() => SelectTab(ProductTab.Char)">Характеристики</button>
+            </div>
+
+            <div style="height: 1px; background-color: #E8ECF2"></div>
+
+            @if (SelectedTab == ProductTab.Desc)
+            {
+                <span style="font-size: 24px; font-weight: 300">@Item.Description</span>
+            }
+            else
+            {
+                <span style="font-size: 24px; font-weight: 300">@Item.Characteristics</span>
+            }
         </div>
     </div>
 }
 
 @code {
-    public const string ActiveTabClass = "font-size: bold;";
+
+    public string GetSelectedButtonStyle(ProductTab tab) =>
+        tab == SelectedTab ? "tab-button-selected" : "";
+
+    public ProductTab SelectedTab { get; set; } = ProductTab.Desc;
+
+    public void SelectTab(ProductTab tab)
+    {
+        SelectedTab = tab;
+    }
 
     [Parameter]
-    public int? ProductId { get; set; }
+    public string? productId { get; set; }
 
-    public int SelectedTabIndex { get; set; }
+    public int ProductId => productId is not null ? int.Parse(productId) : 0;
 
     public ProductInfo? Item { get; set; }
 
-    public string SelectedTabOrEmpty(int tabIndex) =>
-        SelectedTabIndex == tabIndex ? ActiveTabClass : string.Empty;
-
-    public void SetSelectedTab(int index)
+    public enum ProductTab
     {
-        SelectedTabIndex = index;
+        Desc,
+        Char
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var product = await _db.Products
+            .Include(x => x.Vendor)
+            .Include(x => x.Category)
+            .Include(x => x.Images)
+            .Include(x => x.Price).ThenInclude(x => x.Template)
+            .FirstOrDefaultAsync(x => x.Id == ProductId);
+
+        if (product is not null)
+        {
+            Item = Map(product);
+        }
+    }
+
+    private static ProductInfo Map(Product product) => new()
+    {
+        Id = product.Id,
+        ImageUrls = [Consts.PlaceholderUrl],
+        Name = product.Name,
+        Description = product.Description,
+        Characteristics = product.Characteristics,
+        VendorName = product.Vendor.UserName,
+        Price = product.Price.FormattedPrice,
+        IsAddedToCart = false,
+    };
 
 }

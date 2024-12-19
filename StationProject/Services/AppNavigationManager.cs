@@ -10,10 +10,10 @@ public sealed class AppNavigationManager(
     public void NavigateToProducts(int? categoryId = null) =>
         Navigate($"Products/{categoryId}");
 
-    public void NavigateToFastItemOrder(string productId) =>
+    public void NavigateToFastItemOrder(int productId) =>
         Navigate($"Order?productid={productId}");
 
-    public void NavigateToFullInfo(string productId) =>
+    public void NavigateToFullInfo(int productId) =>
         Navigate($"Product/{productId}");
 
     public void NavigateToCart() =>

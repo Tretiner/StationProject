@@ -18,7 +18,7 @@
             @foreach (var item in CartItems)
             {
                 <div class="f-row cart-item gap-10" @onclick="@item.ChangeChecked" @onclick:stopPropagation="true" style="flex: 1;">
-                    <img src="@item.Source.FirstImageOrPlaceholderUrl()" style="width: 193px; height: 193px"/>
+                    <img src="@item.Source.ImageUrl" style="width: 193px; height: 193px"/>
 
                     <div class="f-column space-between" style="padding: 20px; flex: 1">
                         <div class="f-row space-between gap-20" style="align-items: center">
@@ -75,68 +75,72 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // var korzinaItems = await _db.Cart
-        //     .Include(x => x.Source).ThenInclude(x => x.Vendor)
-        //     .ToListAsync();
-        //
-        // CartItems = korzinaItems.Select(x =>
-        //     new CartItemInfo(
-        //         Id: x.Id,
-        //         Price: x.Source.Price,
-        //         PriceTemplate: x.Source.PriceTemplate,
-        //         Count: x.Count,
-        //         Source: Map(x.Source)
-        //     )
-        // ).ToList();
+        var korzinaItems = await _db.Cart
+            .Include(x => x.Product).ThenInclude(x => x.Vendor)
+            .Include(x => x.Product).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
+            .ToListAsync();
+        
+        CartItems = korzinaItems.Select(x =>
+            new CartItemInfo(
+                Id: x.Id,
+                Price: x.Product.Price.Value,
+                PriceTemplate: x.Product.Price.Template.Value,
+                Count: x.Count,
+                Source: Map(x.Product)
+            )
+        ).ToList();
     }
 
-    public void RemoveSelectedItem(string itemId)
+    public void RemoveSelectedItem(int itemId)
     {
-        // _db.KorzinaItems.Remove(_db.KorzinaItems.First(x => x.Id == itemId));
-        // CartItems!.RemoveAt(CartItems.FindIndex(x => x.Id == itemId));
+        _db.Cart.Remove(_db.Cart.First(x => x.Id == itemId));
+        CartItems!.RemoveAt(CartItems.FindIndex(x => x.Id == itemId));
     }
 
     public async Task MakeOrder()
     {
         var cartItemIds = CartItems.Where(x => x.IsSelected).Select(x => x.Id).ToList();
 
-        // var korzinaItems = await _db.KorzinaItems.Include(y => y.Source)
-        //     .Where(x => cartItemIds.Contains(x.Id)).ToListAsync();
-        //
-        // var orderItems = CartItems.Where(x => x.IsSelected).Select(x =>
-        // {
-        //     return new OrderItem
-        //     {
-        //         Source = korzinaItems.First(y => y.Id == x.Id).Source,
-        //         Count = x.SelectedCount
-        //     };
-        // }).ToList();
-        //
-        // await _db.Orders.AddAsync(
-        //     new Order
-        //     {
-        //         Items = orderItems,
-        //         OrdererId = await GetUserId(),
-        //         ArrivalTime = DateTime.Today.AddDays(2),
-        //         WholeCost = GetResultPrice()
-        //     }
-        // );
-        // await _db.SaveChangesAsync();
-        //
-        // _db.KorzinaItems.RemoveRange(korzinaItems);
-        // CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
-        // await _db.SaveChangesAsync();
+        var korzinaItems = await _db.Cart
+            .Include(x => x.Product).ThenInclude(x => x.Vendor)
+            .Include(x => x.Product).ThenInclude(x => x.Category)
+            .Include(x => x.Product).ThenInclude(x => x.Images)
+            .Include(x => x.Product).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
+            .Where(x => cartItemIds.Contains(x.Id)).ToListAsync();
+        
+        var orderItems = CartItems.Where(x => x.IsSelected).Select(x =>
+        {
+            return new OrderItem
+            {
+                Product = korzinaItems.First(y => y.Id == x.Id).Product,
+                Count = x.SelectedCount
+            };
+        }).ToList();
+        
+        await _db.Orders.AddAsync(
+            new Order
+            {
+                Items = orderItems,
+                UserId = int.Parse(await GetUserId()),
+                ArrivalTime = DateTime.Today.AddDays(2)
+            }
+        );
+        await _db.SaveChangesAsync();
+        
+        _db.Cart.RemoveRange(korzinaItems);
+        CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
+        await _db.SaveChangesAsync();
     }
 
-    // private static ProductShortInfo Map(Product product) => new()
-    // {
-    //     Id = product.Id,
-    //     ImageUrls = product.ImageUrls,
-    //     Name = product.Name,
-    //     VendorName = product.Vendor.UserName,
-    //     Price = string.Format(product.PriceTemplate, product.Price),
-    //     IsAddedToCart = false,
-    // };
+    private static ProductShortInfo Map(Product product) => new()
+    {
+        Id = product.Id,
+        ImageUrl = product.Images.First().Url,
+        Name = product.Name,
+        VendorName = product.Vendor.UserName,
+        Price = product.Price.FormattedPrice,
+        IsAddedToCart = false,
+    };
 
     async Task<string> GetUserId()
     {

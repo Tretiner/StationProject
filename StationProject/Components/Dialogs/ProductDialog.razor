@@ -1,6 +1,7 @@
 @page "/product-dialog"
 @using StationProject.Data
 @using StationProject.Data.Models
+@using StationProject.Services
 @inject ApplicationDbContext _db;
 @inject DialogService DialogService;
 
@@ -8,9 +9,8 @@
     <DataAnnotationsValidator/>
 
     <RadzenTextBox Name="Name" @bind-Value="@Product.Name" Placeholder="Название продукта"/>
-    @* <RadzenNumeric Name="TotalCount" @bind-Value="@Product.TotalCount" Placeholder="Количество на складе"/> *@
+    <RadzenNumeric Name="TotalCount" @bind-Value="@Product.Count" Placeholder="Количество на складе"/>
     <RadzenNumeric Name="Price" @bind-Value="@Product.Price" Placeholder="Цена продукта"/>
-    @* <RadzenTextBox Name="PriceTemplate" @bind-Value="@Product.PriceTemplate" Placeholder="Ценовой шаблон"/> *@
     <RadzenTextBox Name="Description" @bind-Value="@Product.Description" Placeholder="Описание продукта"/>
 
     <RadzenDropDown Data="@Categories" TextProperty="Name" ValueProperty="Id"
@@ -35,39 +35,38 @@
 
     private async Task SaveProduct()
     {
-        // if (string.IsNullOrEmpty(Product.Id)) // New product
-        // {
-        //     Product.VendorId = await GetUserId();
-        //     _db.Products.Add(Product);
-        // }
-        // else // Update existing product
-        // {
-        //     var existingProduct = await _db.Products.FindAsync(Product.Id);
-        //     if (existingProduct != null)
-        //     {
-        //         existingProduct.Name = Product.Name;
-        //         // existingProduct.TotalCount = Product.TotalCount;
-        //         existingProduct.Price = Product.Price;
-        //         // existingProduct.PriceTemplate = Product.PriceTemplate;
-        //         existingProduct.Description = Product.Description;
-        //         existingProduct.CategoryId = Product.CategoryId;
-        //     }
-        // }
-        //
-        // await _db.SaveChangesAsync();
-        // Close();
+        if (Product.Id == 0) // New product
+        {
+            var userId = await authenticationStateTask.GetUserIdAsync();
+
+            if (userId is null)
+            {
+                return;
+            }
+
+            Product.VendorId = userId.Value;
+            _db.Products.Add(Product);
+        }
+        else // Update existing product
+        {
+            var existingProduct = await _db.Products.FindAsync(Product.Id);
+            if (existingProduct != null)
+            {
+                existingProduct.Name = Product.Name;
+                // existingProduct.TotalCount = Product.TotalCount;
+                existingProduct.Price = Product.Price;
+                // existingProduct.PriceTemplate = Product.PriceTemplate;
+                existingProduct.Description = Product.Description;
+                existingProduct.CategoryId = Product.CategoryId;
+            }
+        }
+        
+        await _db.SaveChangesAsync();
+        Close();
     }
 
     private void Close()
     {
         DialogService.Close(); // Close dialog without returning any result
     }
-
-    async Task<string> GetUserId()
-    {
-        var user = (await authenticationStateTask).User;
-        var userid = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
-        return userid;
-    }
-
 }

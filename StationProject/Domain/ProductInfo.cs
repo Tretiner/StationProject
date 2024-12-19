@@ -6,6 +6,7 @@ public record ProductInfo
     public string[] ImageUrls { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
+    public string Characteristics { get; set; }
     public string VendorName { get; set; }
     public string Price { get; set; }
     public bool IsAddedToCart { get; set; }
