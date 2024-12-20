@@ -9,17 +9,17 @@
              JustifyContent="JustifyContent.SpaceBetween">
 
     <NavLink href="/">
-        <span class="site-header">HeaderCustom</span>
+        <span class="site-header">StationProject</span>
 
-        @* <AuthorizeView Roles="Joe"> *@
-        @*     <span class="sub-header">Joe</span> *@
-        @* </AuthorizeView> *@
-        @* <AuthorizeView Roles="Vendor"> *@
-        @*     <span class="sub-header">Vendor</span> *@
-        @* </AuthorizeView> *@
-        @* <AuthorizeView Roles="Admin"> *@
-        @*     <span class="sub-header">Admin</span> *@
-        @* </AuthorizeView> *@
+        <AuthorizeView Roles="User">
+            <span class="sub-header">Пользователь</span>
+        </AuthorizeView>
+        <AuthorizeView Roles="Vendor">
+            <span class="sub-header">Продавец</span>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin">
+            <span class="sub-header">Админ</span>
+        </AuthorizeView>
     </NavLink>
 
     <RadzenStack
@@ -28,18 +28,18 @@
         Wrap="FlexWrap.Wrap"
         Gap="20px">
 
-        @* <AuthorizeView Roles="Admin, Vendor"> *@
-        @*     <NavLink class="nav-tab" href="Admin"> *@
-        @*         <div class="f-nav-item"> *@
-        @*             <span>Control panel</span> *@
-        @*         </div> *@
-        @*     </NavLink> *@
-        @* </AuthorizeView> *@
+        <AuthorizeView>
+            <NavLink class="nav-tab" href="Admin">
+                <div class="f-nav-item">
+                    <span>Панель разработчика</span>
+                </div>
+            </NavLink>
+        </AuthorizeView>
 
         <NavLink class="nav-tab" href="Cart">
             <div class="f-nav-item">
                 <img src="images/shopping_bag_24dp.svg" alt="cart" style="width: 36px;"/>
-                <span>Cart</span>
+                <span>Корзина</span>
             </div>
         </NavLink>
 
@@ -48,7 +48,7 @@
                 <NavLink class="nav-tab" href="Account/Manage">
                     <div class="f-nav-item">
                         <img src="images/person_24dp.svg" alt="profile"/>
-                        <span>Profile</span>
+                        <span>Профиль</span>
                     </div>
                 </NavLink>
             </Authorized>
@@ -57,13 +57,13 @@
                 <NavLink class="nav-tab" href="Account/Login">
                     <div class="f-nav-item">
                         <RadzenImage Path="images/person_24dp.svg" AlternateText="Login"/>
-                        <span>Login</span>
+                        <span>Войти</span>
                     </div>
                 </NavLink>
                 <NavLink class="nav-tab" href="Account/Register">
                     <div class="f-nav-item">
                         <RadzenImage Path="images/person_24dp.svg" AlternateText="Register"/>
-                        <span>Register</span>
+                        <span>Регистрация</span>
                     </div>
                 </NavLink>
             </NotAuthorized>

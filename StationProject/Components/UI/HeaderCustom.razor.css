@@ -1,22 +1,23 @@
 .site-header {
-	font-size: 40px; 
-	letter-spacing: 2px;
-	color: #052C3D; 
-	line-height: 0.80em;
+    font-size: 40px;
+    letter-spacing: 2px;
+    color: #052C3D;
+    line-height: 0.80em;
 }
 
 .sub-header {
-	padding-left: 4px; 
-	font-size: 20px; 
-	letter-spacing: -1px; 
-	color: #052C3D; 
-	line-height: 0.95em; 
-	margin-top: auto
+    padding-left: 4px;
+    font-size: 20px;
+    letter-spacing: -1px;
+    color: #052C3D;
+    line-height: 0.95em;
+    margin-top: auto
 }
 
 .nav-tab {
     position: relative;
     color: #052C3D;
+    text-decoration: none;
 }
 
 .f-nav-item {

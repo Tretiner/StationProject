@@ -39,7 +39,7 @@
                 {
                     <div class="f-column gap-10 category-item" style="align-items: center" @onclick="() => _navigation.NavigateToProducts(category.Id)">
                         <div class="circle-mask">
-                            <img src="@(string.IsNullOrWhiteSpace(category.ImageUrl) ? Consts.PlaceholderUrl: category.ImageUrl)" alt="catgory"/>
+                            <img src="@(string.IsNullOrWhiteSpace(category.ImageUrl) ? Consts.PlaceholderUrl : category.ImageUrl)" alt="catgory"/>
                         </div>
                         <span style="align-self: center; font-size: 24px; font-weight: bold;">@category.Name</span>
                     </div>
@@ -57,7 +57,7 @@
     protected override async Task OnInitializedAsync()
     {
         Categories = Enumerable.Repeat(await _db.Categories.FirstAsync(), 5).ToList();
-        
+
         // var now = DateTime.Today;
         // var nowMonthStats = await _db.UserActivityMonthStats.FirstOrDefaultAsync(x => x.CreatedAt.Value.Month == now.Month && x.CreatedAt.Value.Year == now.Year);
         // if (nowMonthStats is not null)

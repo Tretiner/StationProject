@@ -11,7 +11,7 @@
 
 <PageTitle>Confirm email change</PageTitle>
 
-<h1>Confirm email change</h1>
+<h1>Подтверждение почты</h1>
 
 <StatusMessage Message="@message"/>
 
@@ -63,7 +63,7 @@
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        message = "Thank you for confirming your email change.";
+        message = "Почта подверждена!";
     }
 
 }

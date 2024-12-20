@@ -38,8 +38,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRadzenComponents();
 
-builder.Services.AddScoped<AppNavigationManager>();
-
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -48,18 +46,23 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+builder.Services
+    .AddScoped<AppNavigationManager>()
+    .AddScoped<CartService>()
+    .AddScoped<ProductsService>();
+
 var app = builder.Build();
 
 // Ensure the database is created and seeded
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    await dbContext.Database.EnsureDeletedAsync();
-    await dbContext.Database.EnsureCreatedAsync();
-
-    await DbDataSeeder.SeedTestData(dbContext);
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//
+//     await dbContext.Database.EnsureDeletedAsync();
+//     await dbContext.Database.EnsureCreatedAsync();
+//
+//     await DbDataSeeder.SeedTestData(dbContext);
+// }
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

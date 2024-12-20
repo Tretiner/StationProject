@@ -11,15 +11,15 @@
 
 <div class="categories-section">
     <h2>Категории</h2>
-    <div class="category-chips">
-        <div class="category-item" style="align-items: center" @onclick="AddNewCategory">
+    <div class="category-chips" style="align-items: center">
+        <div class="category-item f-row" style="width: 100px; height: 100px; margin: 10px; border: 1px solid #B0AEAEAE; justify-content: center; align-items: center" @onclick="AddCategory">
             <span style="align-self: center; font-size: 24px; font-weight: bold;">+</span>
         </div>
-        @foreach (var category in CategoryWrappers)
+        @foreach (var category in Categories)
         {
             <div class="f-column gap-10 category-item" style="align-items: center" @onclick="@(() => EditCategory(category))">
                 <div class="circle-mask">
-                    @* <img src="@category.Category.FirstImageOrPlaceholderUrl()" alt="catgory"/> *@
+                    <img src="@category.Category.ImageUrl" alt="категория"/>
                 </div>
                 <span style="align-self: center; font-size: 24px; font-weight: bold;">@category.Category.Name</span>
             </div>
@@ -29,23 +29,24 @@
 
 <h2>Продукты</h2>
 <div class="products-section">
-    @foreach (var wrapper in CategoryWrappers)
+    @foreach (var wrapper in Categories)
     {
         <div class="category-header" @onclick="@(() => ToggleProducts(wrapper))">
             <h3>@wrapper.Category.Name</h3>
-            <button class="btn btn-primary" @onclick="@(() => OpenProductDialog(null, wrapper.Category))">Добавить продукт</button>
+            <button class="btn btn-primary" @onclick="@(() => AddProduct(wrapper.Category))">Добавить продукт</button>
         </div>
 
         @if (wrapper.IsExpanded)
         {
             <div class="product-list">
-                @foreach (var product in Products.Where(p => p.CategoryId == wrapper.Category.Id))
+                @foreach (var product in wrapper.Category.Products)
                 {
-                    <div class="product-card" @onclick="@(() => OpenProductDialog(product))">
-                        @* <img src="@product.ImageUrls.FirstOrDefault() ?? Consts.PlaceholderUrl" alt="@product.Name"/> *@
-                        @* <h4>@product.Name</h4> *@
-                        @* <p>Количество: @product.TotalCount</p> *@
-                        @* <p>Цена: @product.Price.ToString("C")</p> *@
+                    <div class="product-card gap-20" style="display: flex; align-items: center;" @onclick="() => EditProduct(wrapper.Category, product)">
+                        <img style="width: 100px; height: 100px" src="@(product.Images.First().Url)" alt="@product.Name"/>
+                        <h4>@product.Name</h4>
+                        <p>Количество: @product.Count.Count</p>
+                        <p>Цена: @product.Price.FormattedPrice</p>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteProduct(product))" @onclick:stopPropagation="true">Удалить</button>
                     </div>
                 }
             </div>
@@ -54,8 +55,7 @@
 </div>
 
 @code {
-    public List<CategoryWrapper> CategoryWrappers { get; set; } = new();
-    public List<Product> Products { get; set; } = new();
+    public List<CategoryWrapper> Categories { get; set; } = new();
 
     private string newCategoryName = string.Empty;
 
@@ -64,53 +64,44 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // var categories = await _db.Category.ToListAsync();
-        // CategoryWrappers = categories.Select(c => new CategoryWrapper(c)).ToList();
-        // Products = await _db.Products.ToListAsync();
+        var categories = await _db.Categories
+            .Include(x => x.Products).ThenInclude(x => x.Vendor)
+            .Include(x => x.Products).ThenInclude(x => x.Images)
+            .Include(x => x.Products).ThenInclude(x => x.Count)
+            .Include(x => x.Products).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
+            .ToListAsync();
+
+        Categories = categories.Select(c => new CategoryWrapper(c)).ToList();
     }
 
-    private async Task AddNewCategory()
+    private async Task AddCategory()
     {
-        var result = await DialogService.OpenAsync<AddCategoryDialog>("Добавить новую категорию", null);
-        
-        // if (result != null)
-        // {
-        //     var newCategory = new Category { Name = result.Name, ImageUrl = result.ImageUrl };
-        //     CategoryWrappers.Add(new CategoryWrapper { Category = newCategory });
-        // }
+        var newCategory = await DialogService.OpenAsync<AddCategoryDialog>("Добавить новую категорию", new Dictionary<string, object>
+        {
+            { nameof(AddCategoryDialog.Category), new Category { Name = "", ImageUrl = "" } },
+        });
+
+        if (newCategory != null)
+        {
+            Categories.Add(new CategoryWrapper(newCategory));
+            await _db.Categories.AddAsync(newCategory);
+            await _db.SaveChangesAsync();
+        }
     }
 
     private async Task EditCategory(CategoryWrapper wrapper)
     {
-        // Open the dialog with existing category data
-        // var result = await DialogService.OpenAsync<AddCategoryDialog>("Редактировать категорию", new Dictionary<string, object>
-        // {
-        //     { "Name", wrapper.Category.Name },
-        //     { "ImageUrl", wrapper.Category.ImageUrl }
-        // });
-        //
-        // if (result != null)
-        // {
-        //     // Update the existing category with new values
-        //     wrapper.Category.Name = result.Name;
-        //     wrapper.Category.ImageUrl = result.ImageUrl;
-        // }
-    }
+        var editedCategory = await DialogService.OpenAsync<AddCategoryDialog>("Редактировать категорию", new Dictionary<string, object>
+        {
+            { nameof(AddCategoryDialog.Category), wrapper.Category },
+        });
 
-    private async Task HandleKeyDown(KeyboardEventArgs e, CategoryWrapper wrapper)
-    {
-        // if (e.Key == "Enter")
-        // {
-        //     // Save changes when Enter is pressed
-        //     wrapper.IsEditing = false;
-        //     _db.Category.Update(wrapper.Category);
-        //     await _db.SaveChangesAsync();
-        // }
-        // else if (e.Key == "Escape")
-        // {
-        //     // Cancel editing on Escape key
-        //     wrapper.IsEditing = false;
-        // }
+        if (editedCategory != null)
+        {
+            wrapper.Category = editedCategory;
+            _db.Categories.Update(wrapper.Category);
+            await _db.SaveChangesAsync();
+        }
     }
 
     private void ToggleProducts(CategoryWrapper wrapper)
@@ -118,21 +109,66 @@
         wrapper.IsExpanded = !wrapper.IsExpanded;
     }
 
-    private async Task OpenProductDialog(Product? product, Category? category = null)
+    private async Task AddProduct(Category category)
     {
-        // var parameters = new Dictionary<string, object>()
-        // {
-        //     { "Product", product ?? new Product { CategoryId = category?.Id } },
-        //     { "Categories", CategoryWrappers.Select(cw => cw.Category).ToList() }
-        // };
-        //
-        // var result = await DialogService.OpenAsync<ProductDialog>("Редактировать Продукт", parameters);
-        //
-        // if (result != null)
-        // {
-        //     // Refresh the product list after dialog closes
-        //     Products = await _db.Products.ToListAsync();
-        // }
+        var firstProduct = await _db.Products
+            .Include(x => x.Images)
+            .Include(x => x.Price)
+            .FirstAsync();
+
+        firstProduct.Id = Random.Shared.Next();
+        firstProduct.Images = new List<ProductImage>(); // Initialize as an empty list
+        firstProduct.Name = "";
+        firstProduct.Description = "";
+        firstProduct.Characteristics = "";
+
+        var newProduct = await DialogService.OpenAsync<ProductDialog>("Добавить продукт", new Dictionary<string, object>
+        {
+            { nameof(ProductDialog.Product), firstProduct },
+            { nameof(ProductDialog.Categories), Categories.Select(x => x.Category).ToList() },
+        });
+
+        if (newProduct != null)
+        {
+            await _db.Products.AddAsync(newProduct);
+            await _db.SaveChangesAsync();
+        }
     }
 
+    private async Task EditProduct(Category category, Product product)
+    {
+        var editedProduct = await DialogService.OpenAsync<ProductDialog>("Редактировать продукт", new Dictionary<string, object>
+        {
+            { nameof(ProductDialog.Product), product },
+            { nameof(ProductDialog.Categories), Categories.Select(x => x.Category).ToList() },
+        });
+
+        if (editedProduct != null)
+        {
+            _db.Products.Update(editedProduct);
+            await _db.SaveChangesAsync();
+        }
+    }
+
+    private async Task DeleteProduct(Product product)
+    {
+        // Show confirmation dialog before deleting
+        bool confirmed = await DialogService.Confirm("Вы уверены, что хотите удалить этот продукт?", "Подтверждение удаления") ?? false;
+
+        if (confirmed)
+        {
+            _db.Products.Remove(product);
+            await _db.SaveChangesAsync();
+
+            // Optionally, remove the product from the UI list
+            foreach (var wrapper in Categories)
+            {
+                if (wrapper.Category.Products.Contains(product))
+                {
+                    wrapper.Category.Products.Remove(product);
+                    break;
+                }
+            }
+        }
+    }
 }

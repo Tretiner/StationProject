@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Data
 @using StationProject.Data.Models
@@ -7,6 +8,8 @@
 
 @inject ApplicationDbContext _db;
 @inject AppNavigationManager _navigation;
+
+@attribute [Authorize]
 
 @if (ActualOrders.Count > 0 || OldOrders.Count > 0)
 {
@@ -17,16 +20,25 @@
         <div class="f-column gap-20" style="width: 800px; align-self: center">
             @foreach (var order in ActualOrders)
             {
-                <div class="f-column order-view-item">
+                <div class="f-column order-view-item gap-10">
 
                     <div class="f-row space-between">
                         <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
 
-                        <span style="font-size: 20px">Оплачено: @GetWholeCost(order)</span>
+                        @if (order.Status == OrderStatus.Registration)
+                        {
+                            <button style="display:  block" class="primary" @onclick="() => PayForOrder(order.Id)">Оплатить</button>
+                        }
+                        else
+                        {
+                            <span style="font-size: 20px" @onclick="() => UnpayForOrder(order.Id)">Оплачено: @GetWholeCost(order)</span>
+                        }
                     </div>
 
                     <div class="f-row space-between">
                         <div class="f-column gap-10">
+                            <span style="font-size: 16px; font-weight: 600">Адрес: @order.ArrivalAddress</span>
+                            
                             <span style="font-size: 16px">Статус: @order.Status</span>
 
                             <span style="font-size: 14px">Ожидаемая дата: @ToRuDayNormMonth(order.ArrivalTime)</span>
@@ -36,7 +48,7 @@
                             @foreach (var item in order.Items.Take(4))
                             {
                                 <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.Id)">
-                                    <img src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
+                                    <img style="width: 90px; height: 90px" src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
                                 </div>
                             }
                         </div>
@@ -55,26 +67,27 @@
         <div class="f-column gap-20" style="width: 800px; align-self: center">
             @foreach (var order in OldOrders)
             {
-                <div class="f-column order-view-item gap-10">
+
+                <div class="f-column order-view-item">
 
                     <div class="f-row space-between">
                         <span style="font-weight: bold; font-size: 20px">Заказ от @ToRuDayNormMonth(order.CreatedAt)</span>
 
-                        <span style="font-size: 20px">Оплачено: @GetWholeCost(order)</span>
+                        <span style="font-size: 20px" @onclick="() => UnpayForOrder(order.Id)">Оплачено: @GetWholeCost(order)</span>
                     </div>
 
                     <div class="f-row space-between">
                         <div class="f-column gap-10">
                             <span style="font-size: 16px">Статус: @order.Status</span>
 
-                            <span style="font-size: 14px">Дата приезда: @ToRuDayNormMonth(order.ArrivalTime)</span>
+                            <span style="font-size: 14px">Дата прихода: @ToRuDayNormMonth(order.ArrivalTime)</span>
                         </div>
 
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
                                 <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.Id)">
-                                    <img src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
+                                    <img style="width: 90px; height: 90px" src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
                                 </div>
                             }
                         </div>
@@ -92,6 +105,22 @@ else
 @code {
     public List<Order> ActualOrders { get; set; } = [];
     public List<Order> OldOrders { get; set; } = [];
+
+    public void PayForOrder(int orderId)
+    {
+        var order = _db.Orders.First(x => x.Id == orderId);
+        order.Status++;
+        _db.Orders.Update(order);
+        _db.SaveChanges();
+    }
+
+    public void UnpayForOrder(int orderId)
+    {
+        var order = _db.Orders.First(x => x.Id == orderId);
+        order.Status--;
+        _db.Orders.Update(order);
+        _db.SaveChanges();
+    }
 
     protected override async Task OnInitializedAsync()
     {

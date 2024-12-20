@@ -61,11 +61,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var m10ago = DateTime.UtcNow.AddMonths(-10);
-        var monthStats = await _db.UserActivityMonthStats
+        var m10ago = DateTimeOffset.UtcNow.AddMonths(-10);
+        var monthStats = _db.UserActivityMonthStats.ToList()
             .Where(x => x.CreatedAt >= m10ago)
             .OrderBy(x => x.CreatedAt)
-            .ToListAsync();
+        ;
 
         ActualMonths = monthStats.Select(x => new MonthViews(
             Views: x.TotalSiteViews,

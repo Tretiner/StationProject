@@ -1,12 +1,19 @@
 @page "/Product/{productId?}"
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Data
 @using StationProject.Data.Models
 @using StationProject.Domain
+@using StationProject.Services
 
-@inject ApplicationDbContext _db;
+@inject ApplicationDbContext _db
+@inject CartService _cartService;
+@inject AppNavigationManager _nav;
+@inject AuthenticationStateProvider authStateProvider;
+
+@attribute [Authorize]
 
 @if (productId is null)
 {
@@ -22,7 +29,7 @@ else
         <div class="f-column gap-20">
             <img src="@Item.FirstImageOrPlaceholderUrl()" style="width: 500px; height: 500px"/>
 
-            <div style="height: 1px; flex: 1; background-color: #E8ECF2;"></div>
+            <div style="height: 1px; background-color: #E8ECF2;"></div>
 
             <div class="fw-row space-between" style="flex: 1;">
                 @foreach (var imgUrl in Item.ImageUrls.Skip(1).Take(4))
@@ -33,12 +40,12 @@ else
         </div>
 
         <div class="f-column gap-10" style="padding: 10px 20px; width: 100%">
-            <span style="font-size: 48px;">@Item.Name</span>
+            <span style="font-size: 32px;">@Item.Name</span>
 
-            <div class="fw-row gap-20" style="text-align: center">
-                <span style="font-size: 32px">@Item.VendorName //</span>
-
+            <div class="fw-row space-between" style="align-content: center; align-items: center">
                 <span style="font-weight: bold; font-size: 40px">@Item.Price</span>
+
+                <button class="outlined" @onclick="() => AddOrIncrementToCart(Item.Id)">Добавить в корзину</button>
             </div>
 
 
@@ -49,14 +56,16 @@ else
 
             <div style="height: 1px; background-color: #E8ECF2"></div>
 
-            @if (SelectedTab == ProductTab.Desc)
-            {
-                <span style="font-size: 24px; font-weight: 300">@Item.Description</span>
-            }
-            else
-            {
-                <span style="font-size: 24px; font-weight: 300">@Item.Characteristics</span>
-            }
+            <span style="white-space: pre-line; font-size: 24px; font-weight: 300">
+                @if (SelectedTab == ProductTab.Desc)
+                {
+                    @((MarkupString)Item.Description)
+                }
+                else
+                {
+                    @((MarkupString)Item.Characteristics)
+                }
+            </span>
         </div>
     </div>
 }
@@ -86,6 +95,12 @@ else
         Char
     }
 
+    private async Task AddOrIncrementToCart(int productId)
+    {
+        await _cartService.AddOrIncrementProduct(await authStateProvider.GetAuthenticationStateAsync().GetUserIdAsync() ?? 0, productId);
+        _nav.NavigateToCart();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var product = await _db.Products
@@ -104,7 +119,7 @@ else
     private static ProductInfo Map(Product product) => new()
     {
         Id = product.Id,
-        ImageUrls = [Consts.PlaceholderUrl],
+        ImageUrls = product.Images.Select(x => x.Url).ToArray(),
         Name = product.Name,
         Description = product.Description,
         Characteristics = product.Characteristics,

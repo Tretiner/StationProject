@@ -1,6 +1,7 @@
 @page "/Cart"
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Data
 @using StationProject.Data.Models
@@ -9,6 +10,9 @@
 
 @inject AppNavigationManager _navigation
 @inject ApplicationDbContext _db;
+@inject CartService _cartService;
+
+@attribute [Authorize]
 
 @if (CartItems is { Count: > 0 })
 {
@@ -33,9 +37,9 @@
                                 <img src="images/trash_24dp.svg" alt="cart" style="width: 24px;"/>
                             </button>
                             <div class="quantity-control" style="flex: 1" @onclick:stopPropagation="true">
-                                <button @onclick="@(() => item.SelectedCount--)" @onclick:stopPropagation="true">-</button>
+                                <button @onclick="@(() => item.Count++)" @onclick:stopPropagation="true">-</button>
                                 <input type="number" @bind="@item.SelectedCount" min="1"/>
-                                <button @onclick="@(() => item.SelectedCount++)" @onclick:stopPropagation="true">+</button>
+                                <button @onclick="@(() => item.Count--)" @onclick:stopPropagation="true">+</button>
                             </div>
                             <button class="primary" @onclick="() => _navigation.NavigateToFastItemOrder(item.Source.Id)" @onclick:stopPropagation="true">Купить</button>
                         </div>
@@ -50,8 +54,22 @@
                 <span style="font-size: 32px; font-weight: bold">@GetResultPrice()</span>
             </div>
 
-            <button class="primary" @onclick="MakeOrder">Заказать</button>
+            @if (CartItems is { Count: > 0 } && CartItems.Any(x => x.IsSelected))
+            {
+                <div class="form-group">
+                    <label>Адрес:</label>
+                    <InputText @bind-Value="Address" class="form-control"/>
+                </div>
+
+                @if (string.IsNullOrWhiteSpace(Address))
+                {
+                    <div class="text-danger">Пожалуйста, введите адрес.</div>
+                }
+
+                <button class="primary" @onclick="MakeOrder">Заказать</button>
+            }
         </div>
+
 
     </div>
 }
@@ -64,6 +82,8 @@ else
 @code {
     public List<CartItemInfo>? CartItems { get; set; }
 
+    public string Address { get; set; } = "";
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
 
@@ -75,11 +95,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var korzinaItems = await _db.Cart
-            .Include(x => x.Product).ThenInclude(x => x.Vendor)
-            .Include(x => x.Product).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
-            .ToListAsync();
-        
+        var korzinaItems = await _cartService.GetUserCart(await authenticationStateTask.GetUserIdAsync() ?? 0);
+
         CartItems = korzinaItems.Select(x =>
             new CartItemInfo(
                 Id: x.Id,
@@ -91,9 +108,9 @@ else
         ).ToList();
     }
 
-    public void RemoveSelectedItem(int itemId)
+    public async Task RemoveSelectedItem(int itemId)
     {
-        _db.Cart.Remove(_db.Cart.First(x => x.Id == itemId));
+        await _cartService.RemoveItem(await authenticationStateTask.GetUserIdAsync() ?? 0, itemId);
         CartItems!.RemoveAt(CartItems.FindIndex(x => x.Id == itemId));
     }
 
@@ -107,7 +124,7 @@ else
             .Include(x => x.Product).ThenInclude(x => x.Images)
             .Include(x => x.Product).ThenInclude(x => x.Price).ThenInclude(x => x.Template)
             .Where(x => cartItemIds.Contains(x.Id)).ToListAsync();
-        
+
         var orderItems = CartItems.Where(x => x.IsSelected).Select(x =>
         {
             return new OrderItem
@@ -116,17 +133,18 @@ else
                 Count = x.SelectedCount
             };
         }).ToList();
-        
+
         await _db.Orders.AddAsync(
             new Order
             {
                 Items = orderItems,
-                UserId = int.Parse(await GetUserId()),
+                UserId = (await authenticationStateTask.GetUserIdAsync()).Value,
+                ArrivalAddress = Address,
                 ArrivalTime = DateTime.Today.AddDays(2)
             }
         );
         await _db.SaveChangesAsync();
-        
+
         _db.Cart.RemoveRange(korzinaItems);
         CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
         await _db.SaveChangesAsync();
@@ -142,11 +160,31 @@ else
         IsAddedToCart = false,
     };
 
-    async Task<string> GetUserId()
+    private async Task IncrementCartItem(CartItemInfo item)
     {
-        var user = (await authenticationStateTask).User;
-        var userid = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
-        return userid;
+        // var cartItem = await _db.Cart.Include(x => x.Product).ThenInclude(x => x.Count).FirstAsync(x => x.Id == item.Id);
+        //
+        // if (cartItem.Product.Count.Count - cartItem.Count > 0)
+        // {
+        //     cartItem.Count++;
+        //     _db.Cart.Update(cartItem);
+        //     await _db.SaveChangesAsync();
+        // }
+
+        item.Count++;
+    }
+
+    private async Task DecrementCartItem(CartItemInfo item)
+    {
+        // var cartItem = await _db.Cart.Include(x => x.Product).ThenInclude(x => x.Count).FirstAsync(x => x.Id == item.Id);
+        // if (cartItem.Count >= 2)
+        // {
+        //     cartItem.Count--;
+        //     _db.Cart.Update(cartItem);
+        //     await _db.SaveChangesAsync();
+        // }
+
+        item.Count--;
     }
 
 }

@@ -1,7 +1,8 @@
-@page "/Products/{CategoryId?}"
+@page "/Products/{categoryId?}"
 @rendermode InteractiveServer
 
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Data
@@ -13,6 +14,12 @@
 @inject ApplicationDbContext _db
 @inject UserManager<ApplicationUser> _userManager
 @inject ILogger<CatalogPage> Logger
+
+@inject CartService _cartService
+
+@attribute [Authorize]
+
+
 
 <div class="f-column">
     <div class="fw-row gap-20" style="padding: 20px 60px">
@@ -36,9 +43,9 @@
         {
             <div class="f-column gap-1">
                 <span class="name-focusing-outlined">Категории</span>
-                <div class="f-row gap-10x">
+                <div class="f-row  gap-10">
                     @{
-                        var categoryId = CategoryId is not null ? int.Parse(CategoryId) : 0;
+                        var categoryId = CategoryId;
                     }
                     @foreach (var category in Categories)
                     {
@@ -66,11 +73,11 @@
             @foreach (var product in ProductList)
             {
                 <div class="f-column" style="flex: 1 1 300px; min-width: 230px; width: 290px;" @onclick="() => _navigation.NavigateToFullInfo(product.Id)">
-                    <img src="@product.ImageUrl" style="width: 100%; height: auto;">
+                    <img src="@product.ImageUrl" style="width: 100%; max-height: 380px">
 
                     <div class="f-column">
                         <div class="f-column" style="padding: 10px">
-                            <span style="font-size: 24px; height: 50px; color: #000000">@product.Name</span>
+                            <span style="display: flex; font-size: 20px; flex:  1; color: #000000; text-overflow: ellipsis">@product.Name</span>
                             <div class="f-row" style="align-items: center">
                                 <span style="flex: 1; font-size: 20px; text-align: start; color: #8FA5AE">@product.VendorName</span>
 
@@ -83,13 +90,21 @@
                         <div class="f-row gap-10">
                             @if (product.IsAddedToCart)
                             {
-                                <button class="outlined" style="flex: 1; background-color: #039855; border-color: #00a85d; color: white" @onclick="() => _navigation.NavigateToCart()" @onclick:stopPropagation="true">Добавлено!</button>
+                                <button class="outlined" style="flex: 1; background-color: #039855; border-color: #00a85d; color: white"
+                                        @onclick="() => _navigation.NavigateToCart()" @onclick:stopPropagation="true">
+                                    Добавлено!
+                                </button>
                             }
                             else
                             {
-                                <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)" @onclick:stopPropagation="true">В корзину</button>
+                                <button class="outlined" style="flex: 1;" @onclick="async () => await AddOrIncrementToCart(product)" @onclick:stopPropagation="true">
+                                    В
+                                    корзину
+                                </button>
                             }
-                            <button class="primary" style="flex: 1;" @onclick="() => _navigation.NavigateToFastItemOrder(product.Id)" @onclick:stopPropagation="true">Купить</button>
+                            <button class="primary" style="flex: 1;" @onclick="() => _navigation.NavigateToFastItemOrder(product.Id)" @onclick:stopPropagation="true">
+                                Купить
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -108,25 +123,27 @@
     private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
 
     [Parameter]
-    public string? CategoryId { get; set; }
+    public string? categoryId { get; set; }
+
+    public int CategoryId => categoryId is not null ? int.Parse(categoryId) : -1;
 
     public List<Category>? Categories { get; set; }
 
     public string QueryText = "";
     public ProductOrder OrderBy = ProductOrder.Default;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await SetProducts();
+    }
+
     public async Task AddOrIncrementToCart(ProductShortInfo product)
     {
         if (!product.IsAddedToCart)
         {
             product.IsAddedToCart = true;
-            await AddOrIncrementKorzinaItem(product.Id);
+            await _cartService.AddOrIncrementProduct(await authenticationStateTask.GetUserIdAsync() ?? 0, product.Id);
         }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await SetProducts();
     }
 
     private async Task SetProducts()
@@ -135,7 +152,7 @@
 
         Categories = await _db.Categories.ToListAsync();
 
-        if (CategoryId is null)
+        if (categoryId is null)
         {
             dbRequest = _db.Products
                 .Include(x => x.Vendor)
@@ -145,7 +162,7 @@
         }
         else
         {
-            var categoryId = int.Parse(CategoryId);
+            var categoryId = CategoryId;
             dbRequest = _db.Categories
                 .Include(x => x.Products).ThenInclude(x => x.Vendor)
                 .Include(x => x.Products).ThenInclude(x => x.Category)
@@ -185,38 +202,5 @@
 
     public List<ProductShortInfo> ProductList { get; set; } = [];
 
-    private async Task AddOrIncrementKorzinaItem(int productId)
-    {
-        var existingItem = await _db.Cart
-            .FirstOrDefaultAsync(x => x.ProductId == productId);
-
-        if (existingItem is not null)
-        {
-            existingItem.Count++;
-            _db.Cart.Update(existingItem);
-            Logger.LogInformation($"Updated item: {existingItem.Id}");
-        }
-        else
-        {
-            var userId = await authenticationStateTask.GetUserIdAsync();
-
-            if (userId is null)
-            {
-                return;
-            }
-
-            var newItem = new CartItem
-            {
-                Product = await _db.Products.FirstAsync(x => x.Id == productId),
-                Count = 1,
-                UserId = userId.Value
-            };
-
-            await _db.Cart.AddAsync(newItem);
-            Logger.LogInformation($"Added item: {newItem.Product.Name} {newItem.Id}");
-        }
-
-        await _db.SaveChangesAsync();
-    }
 
 }

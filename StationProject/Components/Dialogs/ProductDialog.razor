@@ -1,72 +1,89 @@
-@page "/product-dialog"
-@using StationProject.Data
 @using StationProject.Data.Models
-@using StationProject.Services
-@inject ApplicationDbContext _db;
-@inject DialogService DialogService;
+@inject DialogService DialogService
 
-<EditForm Model="@Product" OnValidSubmit="@SaveProduct">
+<EditForm Model="@Product" OnValidSubmit="@Submit">
     <DataAnnotationsValidator/>
 
-    <RadzenTextBox Name="Name" @bind-Value="@Product.Name" Placeholder="Название продукта"/>
-    <RadzenNumeric Name="TotalCount" @bind-Value="@Product.Count" Placeholder="Количество на складе"/>
-    <RadzenNumeric Name="Price" @bind-Value="@Product.Price" Placeholder="Цена продукта"/>
-    <RadzenTextBox Name="Description" @bind-Value="@Product.Description" Placeholder="Описание продукта"/>
+    <div class="form-group">
+        <label>Название продукта:</label>
+        <InputText @bind-Value="Product.Name" class="form-control"/>
+    </div>
 
-    <RadzenDropDown Data="@Categories" TextProperty="Name" ValueProperty="Id"
-                    @bind-Value="@Product.CategoryId" Placeholder="Выберите категорию"/>
+    <div class="form-group">
+        <label>Количество на складе:</label>
+        <InputNumber @bind-Value="Product.CountId" class="form-control"/>
+    </div>
 
-    <RadzenButton ButtonType="ButtonType.Submit" Text="Сохранить"/>
+    <div class="form-group">
+        <label>Цена продукта:</label>
+        <InputNumber @bind-Value="Product.PriceId" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Описание продукта:</label>
+        <InputTextArea @bind-Value="Product.Description" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Характеристики продукта:</label>
+        <InputTextArea @bind-Value="Product.Characteristics" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label>Выберите категорию:</label>
+        <InputSelect @bind-Value="Product.CategoryId" class="form-control">
+            @foreach (var category in Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <!-- Image URL input -->
+    <div class="form-group">
+        <label>URL изображения:</label>
+        <InputText @bind-Value="newImageUrl" class="form-control" Placeholder="Введите URL изображения"/>
+        <button type="button" class="btn btn-secondary mt-2" @onclick="@AddImageUrl">Добавить изображение</button>
+    </div>
+
+    <!-- Display added images -->
+    @if (Product.Images.Any())
+    {
+        <h5>Добавленные изображения:</h5>
+        <ul>
+            @foreach (var image in Product.Images)
+            {
+                <li><img src="@image.Url" alt="Product Image" style="max-width: 100px; max-height: 100px;"/> @image.Url</li>
+            }
+        </ul>
+    }
+
+    <button type="submit" class="btn btn-primary">Подтвердить</button>
+    <button type="button" class="btn btn-secondary" @onclick="@Close">Отмена</button>
 </EditForm>
 
 @code {
-    [Parameter] public Product Product { get; set; }
-    [Parameter] public List<Category> Categories { get; set; }
+    [Parameter] public Product Product { get; set; } = new Product(); // Create a new Product instance
+    [Parameter] public List<Category> Categories { get; set; } = new List<Category>();
 
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+    private string newImageUrl = string.Empty; // Variable to hold the new image URL
 
-    private bool isVisible;
-
-    protected override void OnParametersSet()
+    private void AddImageUrl()
     {
-        isVisible = true;
-    }
-
-    private async Task SaveProduct()
-    {
-        if (Product.Id == 0) // New product
+        if (!string.IsNullOrWhiteSpace(newImageUrl))
         {
-            var userId = await authenticationStateTask.GetUserIdAsync();
-
-            if (userId is null)
-            {
-                return;
-            }
-
-            Product.VendorId = userId.Value;
-            _db.Products.Add(Product);
+            // Add the new image URL to the product's Images collection
+            Product.Images.Add(new ProductImage { Url = newImageUrl });
+            newImageUrl = string.Empty; // Clear the input after adding
         }
-        else // Update existing product
-        {
-            var existingProduct = await _db.Products.FindAsync(Product.Id);
-            if (existingProduct != null)
-            {
-                existingProduct.Name = Product.Name;
-                // existingProduct.TotalCount = Product.TotalCount;
-                existingProduct.Price = Product.Price;
-                // existingProduct.PriceTemplate = Product.PriceTemplate;
-                existingProduct.Description = Product.Description;
-                existingProduct.CategoryId = Product.CategoryId;
-            }
-        }
-        
-        await _db.SaveChangesAsync();
-        Close();
     }
 
-    private void Close()
+    private void Submit()
     {
-        DialogService.Close(); // Close dialog without returning any result
+        // Logic to save the product goes here
+        // Assuming that Count and Price entities are created and linked properly
+        DialogService.Close(Product); // Return the created Product with its relations
     }
+
+    private void Close() => DialogService.Close();
 }
