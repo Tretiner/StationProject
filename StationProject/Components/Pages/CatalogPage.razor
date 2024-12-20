@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using StationProject.Components.Dialogs
 @using StationProject.Data
 @using StationProject.Data.Models
 @using StationProject.Domain
@@ -14,11 +15,12 @@
 @inject ApplicationDbContext _db
 @inject UserManager<ApplicationUser> _userManager
 @inject ILogger<CatalogPage> Logger
+@inject NotificationService NotificationService
 
 @inject CartService _cartService
+@inject DialogService DialogService;
 
 @attribute [Authorize]
-
 
 
 <div class="f-column">
@@ -102,7 +104,7 @@
                                     корзину
                                 </button>
                             }
-                            <button class="primary" style="flex: 1;" @onclick="() => _navigation.NavigateToFastItemOrder(product.Id)" @onclick:stopPropagation="true">
+                            <button class="primary" style="flex: 1;" @onclick="() => MakeOrderFast(product)" @onclick:stopPropagation="true">
                                 Купить
                             </button>
                         </div>
@@ -193,7 +195,7 @@
     private static ProductShortInfo Map(Product product) => new()
     {
         Id = product.Id,
-        ImageUrl = product.Images.First().Url,
+        ImageUrl = product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl,
         Name = product.Name,
         VendorName = product.Vendor.UserName,
         Price = product.Price.FormattedPrice,
@@ -202,5 +204,47 @@
 
     public List<ProductShortInfo> ProductList { get; set; } = [];
 
+
+    private async Task MakeOrderFast(ProductShortInfo product)
+    {
+        var productX = await _db.Products.FirstAsync(x => x.Id == product.Id);
+        var fastOrder = await DialogService.OpenAsync<FastOrderDialog>("Сделать быстрый заказ", new Dictionary<string, object>()
+        {
+            {
+                nameof(FastOrderDialog.FastOrder), new FastOrder() { Product = productX, Address = "" }
+            }
+        });
+
+        if (fastOrder is not null)
+        {
+
+            var orderItem = new OrderItem
+            {
+                ProductId = productX.Id,
+                Count = 1,
+            };
+
+            await _db.Orders.AddAsync(
+                new Order
+                {
+                    Items = [orderItem],
+                    UserId = (await authenticationStateTask.GetUserIdAsync()).Value,
+                    ArrivalAddress = fastOrder.Address,
+                    ArrivalTime = DateTime.Today.AddDays(2)
+                }
+            );
+            await _db.SaveChangesAsync();
+
+
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Быстрый заказ успешно создан! Оплатить его вы можете в профиле",
+                Duration = 4000
+            });
+        }
+
+    }
 
 }

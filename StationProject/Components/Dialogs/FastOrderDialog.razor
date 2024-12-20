@@ -1,0 +1,23 @@
+﻿@using StationProject.Domain
+@inject DialogService DialogService
+
+<EditForm Model="FastOrder" OnValidSubmit="@Submit" class="f-column gap-10">
+    <DataAnnotationsValidator/>
+
+    <div class="form-group">
+        <label>Адрес</label>
+        <InputText @bind-Value="FastOrder.Address" class="form-control"/>
+    </div>
+
+    <button type="submit" disabled="@(string.IsNullOrWhiteSpace(FastOrder.Address))" class="btn btn-primary">Подтвердить</button>
+    <button type="button" class="btn btn-secondary" @onclick="@Close">Отмена</button>
+</EditForm>
+
+@code {
+    [Parameter] public FastOrder? FastOrder { get; set; }
+
+    private void Submit() => DialogService.Close(FastOrder);
+
+    private void Close() => DialogService.Close();
+
+}

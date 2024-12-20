@@ -6,7 +6,7 @@
 @inject ApplicationDbContext _db
 @inject DialogService DialogService
 
-<EditForm Model="@user" OnValidSubmit="@UpdateUser">
+<EditForm Model="@user" OnValidSubmit="@UpdateUser" class="f-column gap-10">
     <DataAnnotationsValidator/>
 
     <div class="form-group">

@@ -1,4 +1,5 @@
 @page "/categories"
+@using System.Reflection.Metadata
 @using Microsoft.EntityFrameworkCore
 @using StationProject.Components.Dialogs
 @using StationProject.Data
@@ -33,7 +34,7 @@
     {
         <div class="category-header" @onclick="@(() => ToggleProducts(wrapper))">
             <h3>@wrapper.Category.Name</h3>
-            <button class="btn btn-primary" @onclick="@(() => AddProduct(wrapper.Category))">Добавить продукт</button>
+            <button class="btn btn-primary" @onclick="@(() => AddProduct(wrapper.Category))" @onclick:stopPropagation="true">Добавить продукт</button>
         </div>
 
         @if (wrapper.IsExpanded)
@@ -42,7 +43,7 @@
                 @foreach (var product in wrapper.Category.Products)
                 {
                     <div class="product-card gap-20" style="display: flex; align-items: center;" @onclick="() => EditProduct(wrapper.Category, product)">
-                        <img style="width: 100px; height: 100px" src="@(product.Images.First().Url)" alt="@product.Name"/>
+                        <img style="width: 100px; height: 100px" src="@(product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)" alt="@product.Name"/>
                         <h4>@product.Name</h4>
                         <p>Количество: @product.Count.Count</p>
                         <p>Цена: @product.Price.FormattedPrice</p>
@@ -111,20 +112,21 @@
 
     private async Task AddProduct(Category category)
     {
-        var firstProduct = await _db.Products
-            .Include(x => x.Images)
-            .Include(x => x.Price)
-            .FirstAsync();
-
-        firstProduct.Id = Random.Shared.Next();
-        firstProduct.Images = new List<ProductImage>(); // Initialize as an empty list
-        firstProduct.Name = "";
-        firstProduct.Description = "";
-        firstProduct.Characteristics = "";
+        var newProductX = new Product()
+        {
+            Id = Random.Shared.Next(),
+            VendorId = (await authenticationStateTask.GetUserIdAsync()).Value,
+            Price = new Price() { Value = 999 },
+            Images = new List<ProductImage> { new ProductImage() { Url = Consts.PlaceholderUrl } },
+            Count = new ProductCount() { Count = 1 },
+            Name = "",
+            Description = "",
+            Characteristics = "",
+        };
 
         var newProduct = await DialogService.OpenAsync<ProductDialog>("Добавить продукт", new Dictionary<string, object>
         {
-            { nameof(ProductDialog.Product), firstProduct },
+            { nameof(ProductDialog.Product), newProductX },
             { nameof(ProductDialog.Categories), Categories.Select(x => x.Category).ToList() },
         });
 
@@ -152,23 +154,28 @@
 
     private async Task DeleteProduct(Product product)
     {
-        // Show confirmation dialog before deleting
-        bool confirmed = await DialogService.Confirm("Вы уверены, что хотите удалить этот продукт?", "Подтверждение удаления") ?? false;
+        // bool confirmed = await DialogService.Confirm("Вы уверены, что хотите удалить этот продукт?", "Подтверждение удаления", new ConfirmOptions()
+        // {
+        //     CancelButtonText = "Отменить",
+        //     OkButtonText = "Подтвердить",
+        //     CssClass = "dialog-b"
+        // }) ?? false;
+        //
+        // if (confirmed)
+        // {
+        _db.Products.Remove(product);
+        await _db.SaveChangesAsync();
 
-        if (confirmed)
+        // Optionally, remove the product from the UI list
+        foreach (var wrapper in Categories)
         {
-            _db.Products.Remove(product);
-            await _db.SaveChangesAsync();
-
-            // Optionally, remove the product from the UI list
-            foreach (var wrapper in Categories)
+            if (wrapper.Category.Products.Contains(product))
             {
-                if (wrapper.Category.Products.Contains(product))
-                {
-                    wrapper.Category.Products.Remove(product);
-                    break;
-                }
+                wrapper.Category.Products.Remove(product);
+                break;
             }
+            // }
         }
     }
+
 }

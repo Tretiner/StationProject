@@ -262,9 +262,9 @@ public static class DbDataSeeder
         await dbContext.Products.AddRangeAsync(products);
         await dbContext.SaveChangesAsync();
 
-        // var utc = DateTimeOffset.Now;
-        // utc = utc.AddMonths(-9);
-        //
+        var utc = DateTimeOffset.Now;
+        utc = utc.AddMonths(-9);
+        
         // List<UserMonthlyActivityStat> monthStats = [];
         //
         // for (int i = 0; i < 10; i++)

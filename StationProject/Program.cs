@@ -37,6 +37,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRadzenComponents();
+builder.Services.AddScoped<Radzen.NotificationService>();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<ApplicationRole>()

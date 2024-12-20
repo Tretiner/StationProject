@@ -11,6 +11,7 @@
 @inject AppNavigationManager _navigation
 @inject ApplicationDbContext _db;
 @inject CartService _cartService;
+@inject NotificationService NotificationService;
 
 @attribute [Authorize]
 
@@ -37,11 +38,11 @@
                                 <img src="images/trash_24dp.svg" alt="cart" style="width: 24px;"/>
                             </button>
                             <div class="quantity-control" style="flex: 1" @onclick:stopPropagation="true">
-                                <button @onclick="@(() => item.Count++)" @onclick:stopPropagation="true">-</button>
-                                <input type="number" @bind="@item.SelectedCount" min="1"/>
-                                <button @onclick="@(() => item.Count--)" @onclick:stopPropagation="true">+</button>
+                                <button @onclick="@(async () => await DecrementCartItem(item))" @onclick:stopPropagation="true">-</button>
+                                <input type="number" @bind="@item.Count" min="1"/>
+                                <button @onclick="@((async () => await IncrementCartItem(item)))" @onclick:stopPropagation="true">+</button>
                             </div>
-                            <button class="primary" @onclick="() => _navigation.NavigateToFastItemOrder(item.Source.Id)" @onclick:stopPropagation="true">Купить</button>
+                            <button class="primary" @onclick="() => _navigation.FastOrder(item.Source.Id)" @onclick:stopPropagation="true">Купить</button>
                         </div>
                     </div>
                 </div>
@@ -66,7 +67,7 @@
                     <div class="text-danger">Пожалуйста, введите адрес.</div>
                 }
 
-                <button class="primary" @onclick="MakeOrder">Заказать</button>
+                <button class="primary" disabled="@(string.IsNullOrWhiteSpace(Address))" @onclick="MakeOrder">Заказать</button>
             }
         </div>
 
@@ -90,7 +91,7 @@ else
     public string GetResultPrice() =>
         string.Format(
             CartItems.First().PriceTemplate,
-            CartItems.Where(x => x.IsSelected).Sum(x => x.Price * x.SelectedCount)
+            CartItems.Where(x => x.IsSelected).Sum(x => x.Price * x.Count)
         );
 
     protected override async Task OnInitializedAsync()
@@ -148,12 +149,20 @@ else
         _db.Cart.RemoveRange(korzinaItems);
         CartItems.RemoveAll(x => cartItemIds.Contains(x.Id));
         await _db.SaveChangesAsync();
+
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Success",
+            Detail = "Заказ успешно создан! Оплатить его вы можете в профиле",
+            Duration = 4000
+        });
     }
 
     private static ProductShortInfo Map(Product product) => new()
     {
         Id = product.Id,
-        ImageUrl = product.Images.First().Url,
+        ImageUrl = product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl,
         Name = product.Name,
         VendorName = product.Vendor.UserName,
         Price = product.Price.FormattedPrice,
@@ -162,29 +171,29 @@ else
 
     private async Task IncrementCartItem(CartItemInfo item)
     {
-        // var cartItem = await _db.Cart.Include(x => x.Product).ThenInclude(x => x.Count).FirstAsync(x => x.Id == item.Id);
-        //
-        // if (cartItem.Product.Count.Count - cartItem.Count > 0)
-        // {
-        //     cartItem.Count++;
-        //     _db.Cart.Update(cartItem);
-        //     await _db.SaveChangesAsync();
-        // }
+        var cartItem = await _db.Cart.Include(x => x.Product).ThenInclude(x => x.Count).FirstAsync(x => x.Id == item.Id);
 
-        item.Count++;
+        if (cartItem.Product.Count.Count - 1 > cartItem.Count)
+        {
+            cartItem.Count++;
+            _db.Cart.Update(cartItem);
+            await _db.SaveChangesAsync();
+            item.Count = cartItem.Count;
+        }
+
     }
 
     private async Task DecrementCartItem(CartItemInfo item)
     {
-        // var cartItem = await _db.Cart.Include(x => x.Product).ThenInclude(x => x.Count).FirstAsync(x => x.Id == item.Id);
-        // if (cartItem.Count >= 2)
-        // {
-        //     cartItem.Count--;
-        //     _db.Cart.Update(cartItem);
-        //     await _db.SaveChangesAsync();
-        // }
+        var cartItem = await _db.Cart.Include(x => x.Product).ThenInclude(x => x.Count).FirstAsync(x => x.Id == item.Id);
+        if (cartItem.Count >= 2)
+        {
+            cartItem.Count--;
+            _db.Cart.Update(cartItem);
+            await _db.SaveChangesAsync();
+            item.Count = cartItem.Count;
+        }
 
-        item.Count--;
     }
 
 }

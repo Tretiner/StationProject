@@ -6,10 +6,10 @@
 @using StationProject.Data.Models.Enums
 @using StationProject.Services
 
+@rendermode InteractiveServer
+
 @inject ApplicationDbContext _db;
 @inject AppNavigationManager _navigation;
-
-@attribute [Authorize]
 
 @if (ActualOrders.Count > 0 || OldOrders.Count > 0)
 {
@@ -47,7 +47,7 @@
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
-                                <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.Id)">
+                                <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.ProductId)">
                                     <img style="width: 90px; height: 90px" src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
                                 </div>
                             }
@@ -86,7 +86,7 @@
                         <div class="f-row gap-10">
                             @foreach (var item in order.Items.Take(4))
                             {
-                                <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.Id)">
+                                <div style="width: 90px; height: 90px" @onclick="() => _navigation.NavigateToFullInfo(item.ProductId)">
                                     <img style="width: 90px; height: 90px" src="@(item.Product.Images.FirstOrDefault()?.Url ?? Consts.PlaceholderUrl)"/>
                                 </div>
                             }
